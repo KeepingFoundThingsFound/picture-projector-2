@@ -1,0 +1,9 @@
+{
+  "name": "FolderDocs",
+  "version": "0.0.0",
+  "dependencies": {
+    "bootstrap-sass-official": "^3.2.0",
+    "item-mirror": "https://github.com/KeepingFoundThingsFound/itemMirror.git#~0.8.4",
+    "dropbox-build": "*"
+  }
+}

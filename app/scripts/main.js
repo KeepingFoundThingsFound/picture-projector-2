@@ -18,9 +18,38 @@ dropboxClientCredentials = {
 
 dropboxClient = new Dropbox.Client(dropboxClientCredentials);
 
+
+console.log(dropboxClient);
+
 dropboxClient.authDriver(new Dropbox.AuthDriver.Redirect({
 	rememberUser: true
 }));
+
+var authenticatedClient = null;
+
+function getClient() {
+	return authenticatedClient;
+}
+
+function connectDropbox() {
+	if(authenticatedClient) {
+		console.log('Dropbox authenticated');
+	} else {
+		console.log('Dropbox authenticating...');
+		dropboxClient.authenticate(function (error, client) {
+			if(error) {
+				console.log('Dropbox failed to authenticate');
+			} else {
+				authenticatedClient = client;
+				console.log('Dropbox authenticated');
+			}
+		});
+	}
+}
+
+function disconnectDropbox() {
+	dropboxClient.signOut();
+}
 
 dropboxXooMLUtility = {
 	driverURI: 'dropboxXooMLUtility',
@@ -35,3 +64,5 @@ dropboxItemUtility = {
 mirrorSyncUtility = {
 	utilityURI: 'mirrorSyncUtility'
 }
+
+connectDropbox();

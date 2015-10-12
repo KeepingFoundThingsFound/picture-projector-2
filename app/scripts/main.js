@@ -1,25 +1,38 @@
-$.ready(function() {
+$(document).ready(function() {
+	$("#dboxButton").on("click", connectDropbox);
 
 });
 
 var
 	dropboxClientCredentials,
-	dropboxClient,
-	dropboxXooMLUtility,
-	dropboxItemUtility,
-	mirrorSyncUtility,
-	groupingItemURI,
-	itemMirrorOptions,
-	createAssociationOptions;
+	dropboxClient;
+
+dropboxXooMLUtility = {
+	fragmentURI: '/XooML2.xml',
+	driverURI: 'DropboxXooMLUtility',
+	dropboxClient: dropboxClient
+};
+dropboxItemUtility = {
+	driverURI: 'DropboxItemUtility',
+	dropboxClient: dropboxClient
+};
+mirrorSyncUtility = {
+	utilityURI: 'MirrorSyncUtility'
+};
+
+var options = {
+	groupingItemURI: "/",
+	xooMLDriver: dropboxXooMLUtility,
+	itemDriver: dropboxItemUtility,
+	syncDriver: mirrorSyncUtility
+};
+
 dropboxClientCredentials = {
 	key: 'x8o1wifzt41hxf9',
 	secret: 'ct6469y8mfch3vo'
 };
 
 dropboxClient = new Dropbox.Client(dropboxClientCredentials);
-
-
-console.log(dropboxClient);
 
 dropboxClient.authDriver(new Dropbox.AuthDriver.Redirect({
 	rememberUser: true
@@ -55,14 +68,10 @@ dropboxXooMLUtility = {
 	driverURI: 'dropboxXooMLUtility',
 	dropboxClient: dropboxClient
 };
-
 dropboxItemUtility = {
 	driverURI: 'dropboxItemUtility',
 	dropboxClient: dropboxClient
 };
-
 mirrorSyncUtility = {
 	utilityURI: 'mirrorSyncUtility'
 }
-
-connectDropbox();

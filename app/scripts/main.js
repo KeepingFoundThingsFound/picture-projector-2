@@ -18,8 +18,8 @@ var
 	dropboxClient;
 
 dropboxClientCredentials = {
-	key: 'x8o1wifzt41hxf9',
-	secret: 'ct6469y8mfch3vo'
+	key: config.key,
+	secret: config.secret
 };
 
 dropboxClient = new Dropbox.Client(dropboxClientCredentials);

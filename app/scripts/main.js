@@ -54,12 +54,13 @@ function constructIMObject() {
 		itemDriver: dropboxItemUtility,
 		syncDriver: mirrorSyncUtility
 	};
-	var im = new ItemMirror(options, function(error, newMirror) {
+	im = new ItemMirror(options, function(error, newMirror) {
 		if(error) {
 			console.log(error);
 		} else {
 			im = newMirror
 			console.log(im);
+			refreshIMDisplay();
 		}
 	});
 }
@@ -76,6 +77,7 @@ function connectDropbox() {
 			} else {
 				authenticatedClient = client;
 				console.log('Dropbox authenticated');
+				constructIMObject();
 			}
 		});
 	}
@@ -91,13 +93,21 @@ function disconnectDropbox() {
 function refreshIMDisplay() {
 	var entryDisplayName;
 	$("#display").empty();
-	im.listAssociations(function(GUIDs) {
-		associations = GUIDs;
-	});
-	associations.forEach(function(entry) {
-		im.getDisplayName(function(displayName) {
-			entryDisplayName = displayName;
-		});
-		$("#display").append("<p>" + entryDisplayName + "</p>");
-	});
+	// im.listAssociations(function(GUIDs) {
+	// 	associations = GUIDs;
+	// });
+	associations = im.listAssociations();
+	var length = associations.length;
+
+	for(var i = 0; i < length; i++) {
+		var displayText = im.getAssociationDisplayText(associations[i]);
+		$("#display").append("<p>" + displayText + "</p>");
+	}
+
+	// associations.forEach(function(entry) {
+	// 	im.getDisplayName(function(displayName) {
+	// 		entryDisplayName = displayName;
+	// 	});
+	// 	$("#display").append("<p>" + entryDisplayName + "</p>");
+	// });
 }

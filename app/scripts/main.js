@@ -1,31 +1,21 @@
+/*
+ * name: main.js
+ * Authors: Tanner Garrett, Brandon Thepvongsa
+ * Discription: JavaScript used to create the functionality of FolderDocs
+*/
+
 $(document).ready(function() {
 	$("#dboxButton").on("click", connectDropbox);
-
+	if(getClient()) {
+		$(".jumbotron").hide();
+	}
 });
 
 var
+	im,
+	associations,
 	dropboxClientCredentials,
 	dropboxClient;
-
-dropboxXooMLUtility = {
-	fragmentURI: '/XooML2.xml',
-	driverURI: 'DropboxXooMLUtility',
-	dropboxClient: dropboxClient
-};
-dropboxItemUtility = {
-	driverURI: 'DropboxItemUtility',
-	dropboxClient: dropboxClient
-};
-mirrorSyncUtility = {
-	utilityURI: 'MirrorSyncUtility'
-};
-
-var options = {
-	groupingItemURI: "/",
-	xooMLDriver: dropboxXooMLUtility,
-	itemDriver: dropboxItemUtility,
-	syncDriver: mirrorSyncUtility
-};
 
 dropboxClientCredentials = {
 	key: 'x8o1wifzt41hxf9',
@@ -44,6 +34,37 @@ function getClient() {
 	return authenticatedClient;
 }
 
+// Constructs the root ItemMirror object from the root of the Dropbox.
+function constructIMObject() {
+	dropboxXooMLUtility = {
+		fragmentURI: '/XooML2.xml',
+		driverURI: 'DropboxXooMLUtility',
+		dropboxClient: dropboxClient
+	};
+	dropboxItemUtility = {
+		driverURI: 'DropboxItemUtility',
+		dropboxClient: dropboxClient
+	};
+	mirrorSyncUtility = {
+		utilityURI: 'MirrorSyncUtility'
+	};
+	var options = {
+		groupingItemURI: "/",
+		xooMLDriver: dropboxXooMLUtility,
+		itemDriver: dropboxItemUtility,
+		syncDriver: mirrorSyncUtility
+	};
+	var im = new ItemMirror(options, function(error, newMirror) {
+		if(error) {
+			console.log(error);
+		} else {
+			im = newMirror
+			console.log(im);
+		}
+	});
+}
+
+// Directs the client to Dropbox's authentication page to sign in.
 function connectDropbox() {
 	if(authenticatedClient) {
 		console.log('Dropbox authenticated');
@@ -60,18 +81,23 @@ function connectDropbox() {
 	}
 }
 
+// Signs current client out of Dropbox
 function disconnectDropbox() {
 	dropboxClient.signOut();
 }
 
-dropboxXooMLUtility = {
-	driverURI: 'dropboxXooMLUtility',
-	dropboxClient: dropboxClient
-};
-dropboxItemUtility = {
-	driverURI: 'dropboxItemUtility',
-	dropboxClient: dropboxClient
-};
-mirrorSyncUtility = {
-	utilityURI: 'mirrorSyncUtility'
+// Deletes all elements in the display, then populates the list with paragraphs for each
+// association (WiP).
+function refreshIMDisplay() {
+	var entryDisplayName;
+	$("#display").empty();
+	im.listAssociations(function(GUIDs) {
+		associations = GUIDs;
+	});
+	associations.forEach(function(entry) {
+		im.getDisplayName(function(displayName) {
+			entryDisplayName = displayName;
+		});
+		$("#display").append("<p>" + entryDisplayName + "</p>");
+	});
 }

@@ -101,7 +101,7 @@ function refreshIMDisplay() {
 
 	for(var i = 0; i < length; i++) {
 		var displayText = im.getAssociationDisplayText(associations[i]);
-		$("#display").append("<p>" + displayText + "</p>");
+		$("#display").append(associationMarkup(displayText));
 	}
 
 	// associations.forEach(function(entry) {
@@ -110,4 +110,10 @@ function refreshIMDisplay() {
 	// 	});
 	// 	$("#display").append("<p>" + entryDisplayName + "</p>");
 	// });
+}
+
+function associationMarkup(displayText) {
+	return "<div class='row'>" +
+	"<div class='col-md-11'><p>" + displayText + "</p></div>" + 
+	"<div class='col-md-1'><a href='http://google.com'><span class='glyphicon glyphicon-folder-open'></span></a></div>";
 }

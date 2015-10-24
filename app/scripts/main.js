@@ -6,6 +6,12 @@
 
 $(document).ready(function() {
 	$("#dboxButton").on("click", connectDropbox);
+	$(".association").click(function(){
+	 //  // Holds the product ID of the clicked element
+	 //  var productId = $(this).attr('class').replace('addproduct ', '');
+		// addToCart(productId);
+		alert('sup bro');
+	});
 	if(getClient()) {
 		$(".jumbotron").hide();
 	}
@@ -93,27 +99,55 @@ function disconnectDropbox() {
 function refreshIMDisplay() {
 	var entryDisplayName;
 	$("#display").empty();
-	// im.listAssociations(function(GUIDs) {
-	// 	associations = GUIDs;
-	// });
+
 	associations = im.listAssociations();
 	var length = associations.length;
 
 	for(var i = 0; i < length; i++) {
-		var displayText = im.getAssociationDisplayText(associations[i]);
-		$("#display").append(associationMarkup(displayText));
+		$("#display").append(associationMarkup(associations[i]));
 	}
 
-	// associations.forEach(function(entry) {
-	// 	im.getDisplayName(function(displayName) {
-	// 		entryDisplayName = displayName;
-	// 	});
-	// 	$("#display").append("<p>" + entryDisplayName + "</p>");
-	// });
+	// Create the click event handlers
+	$(".association").click(function(){
+		var guid = $(this).attr('data-guid');
+	 //  // Holds the product ID of the clicked element
+	 //  var productId = $(this).attr('class').replace('addproduct ', '');
+		// addToCart(productId);
+		navigateMirror(guid);
+	});
 }
 
-function associationMarkup(displayText) {
+// Attempts to navigate and display a new itemMirror association
+function navigateMirror(guid) {
+	im.createItemMirrorForAssociatedGroupingItem(guid, function(error, newMirror) {
+		console.log(error);
+
+		if(!error) {
+			im = newMirror;
+			refreshIMDisplay();
+		}
+	});
+	
+}
+
+function navigatePrevious() {
+	var parent = im.getCreator();
+
+	if(parent) {
+		im = parent;
+		refreshIMDisplay();
+	}
+}
+
+
+function shout() {
+	alert('syo');
+}
+
+function associationMarkup(guid) {
+	var displayText = im.getAssociationDisplayText(guid);
+	var functionCall = "navigateMirror(" + guid + ")";
 	return "<div class='row'>" +
 	"<div class='col-md-11'><p>" + displayText + "</p></div>" + 
-	"<div class='col-md-1'><a href='http://google.com'><span class='glyphicon glyphicon-folder-open'></span></a></div>";
+	"<div class='col-md-1'><span data-guid='" + guid + "' class='association glyphicon glyphicon-folder-open'></span></div>";
 }

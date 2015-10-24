@@ -12,13 +12,11 @@ $(document).ready(function() {
 		// addToCart(productId);
 		alert('sup bro');
 	});
-	if(getClient()) {
-		$(".jumbotron").hide();
-	}
 });
 
 var
 	im,
+	previous,
 	associations,
 	dropboxClientCredentials,
 	dropboxClient;
@@ -97,8 +95,18 @@ function disconnectDropbox() {
 // Deletes all elements in the display, then populates the list with paragraphs for each
 // association (WiP).
 function refreshIMDisplay() {
+
+	// Hides the jumbotron if we are already connected to Dropbox
+	if(getClient()) {
+		$(".jumbotron").hide();
+	}
+
 	var entryDisplayName;
 	$("#display").empty();
+
+	// Creates the previous/back button
+	previous = im.getCreator();
+	$("#display").append(printPrevious());
 
 	associations = im.listAssociations();
 	var length = associations.length;
@@ -107,16 +115,16 @@ function refreshIMDisplay() {
 		$("#display").append(associationMarkup(associations[i]));
 	}
 
-	// Create the click event handlers
-	$(".association").click(function(){
+	createClickHandlers();
+}
+
+
+function createClickHandlers() {
+	$(".association-grouping").click(function(){
 		var guid = $(this).attr('data-guid');
-	 //  // Holds the product ID of the clicked element
-	 //  var productId = $(this).attr('class').replace('addproduct ', '');
-		// addToCart(productId);
 		navigateMirror(guid);
 	});
 }
-
 // Attempts to navigate and display a new itemMirror association
 function navigateMirror(guid) {
 	im.createItemMirrorForAssociatedGroupingItem(guid, function(error, newMirror) {
@@ -130,24 +138,36 @@ function navigateMirror(guid) {
 	
 }
 
-function navigatePrevious() {
-	var parent = im.getCreator();
+function printPrevious() {
+	if(previous) {
+		return "<a href='#'><< back</a>";
+	}
+}
 
-	if(parent) {
-		im = parent;
+function navigatePrevious() {
+	var previous = im.getCreator();
+
+	if(previous) {
+		im = previous;
 		refreshIMDisplay();
 	}
 }
 
-
-function shout() {
-	alert('syo');
-}
-
+// Returns the markup for an association to be printed to the screen
+// Differentiates between a groupingItem and nonGroupinItem via icon
 function associationMarkup(guid) {
 	var displayText = im.getAssociationDisplayText(guid);
 	var functionCall = "navigateMirror(" + guid + ")";
-	return "<div class='row'>" +
+	var markup = "<div class='row'>" +
 	"<div class='col-md-11'><p>" + displayText + "</p></div>" + 
-	"<div class='col-md-1'><span data-guid='" + guid + "' class='association glyphicon glyphicon-folder-open'></span></div>";
+	"<div class='col-md-1'>";
+
+	if(im.isAssociationAssociatedItemGrouping(guid)) {
+		markup += "<span data-guid='" + guid + "' class='association association-grouping glyphicon glyphicon-folder-open'></span></div>";
+	} else {
+		markup += "<span class='association association-file glyphicon glyphicon-file'></span></div>";
+	}
+
+	return markup;
+	
 }

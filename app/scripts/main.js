@@ -124,7 +124,11 @@ function createClickHandlers() {
 		var guid = $(this).attr('data-guid');
 		navigateMirror(guid);
 	});
+
+	$("#previous-link").on("click", navigatePrevious);
 }
+
+
 // Attempts to navigate and display a new itemMirror association
 function navigateMirror(guid) {
 	im.createItemMirrorForAssociatedGroupingItem(guid, function(error, newMirror) {
@@ -138,12 +142,14 @@ function navigateMirror(guid) {
 	
 }
 
+// Prints the previous link to go back up
 function printPrevious() {
 	if(previous) {
-		return "<a href='#'><< back</a>";
+		return "<p><a href='#' id='previous-link'><< back</a></p>";
 	}
 }
 
+// Navigates and refreshes the display to the previous mirror
 function navigatePrevious() {
 	var previous = im.getCreator();
 

@@ -6,12 +6,6 @@
 
 $(document).ready(function() {
 	$("#dboxButton").on("click", connectDropbox);
-	$(".association").click(function(){
-	 //  // Holds the product ID of the clicked element
-	 //  var productId = $(this).attr('class').replace('addproduct ', '');
-		// addToCart(productId);
-		alert('sup bro');
-	});
 });
 
 var
@@ -118,7 +112,7 @@ function refreshIMDisplay() {
 	createClickHandlers();
 }
 
-
+// Creates the JS click handlers for the various associations and links
 function createClickHandlers() {
 	$(".association-grouping").click(function(){
 		var guid = $(this).attr('data-guid');

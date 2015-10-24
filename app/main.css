@@ -2,3 +2,7 @@ h1 {
 	font-family: 'Roboto slab', serif;
 	text-align: center;
 }
+
+span.association-grouping {
+	cursor: pointer;
+}

@@ -105,11 +105,27 @@ function refreshIMDisplay() {
 	associations = im.listAssociations();
 	var length = associations.length;
 
+	// Grab associations and organize them by type
+	var groupingItems = [];
+	var nonGroupingItems = [];
 	for(var i = 0; i < length; i++) {
-		$("#display").append(associationMarkup(associations[i]));
+		if(im.isAssociationAssociatedItemGrouping(associations[i])) {
+			groupingItems.push(associations[i]);
+		} else {
+			nonGroupingItems.push(associations[i]);
+		}
 	}
 
+	printAssociations(groupingItems);
+	printAssociations(nonGroupingItems);
+
 	createClickHandlers();
+}
+
+function printAssociations(associationList) {
+	for(var i = 0; i < associationList.length; i++) {
+		$("#display").append(associationMarkup(associationList[i]));
+	}
 }
 
 // Creates the JS click handlers for the various associations and links

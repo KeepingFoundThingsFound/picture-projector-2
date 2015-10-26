@@ -3,7 +3,9 @@ Show any folder as a document with basic formatting, pictures and running text. 
 
 # Create and import a config.js file
 
+```
 var config = {
 	key: '1wmeo95e4m9orzx',
 	secret: 'fa2c80hkf3bigfp'
 }
+```

@@ -116,8 +116,9 @@ function refreshIMDisplay() {
 		}
 	}
 
-	printAssociations(groupingItems);
-	printAssociations(nonGroupingItems);
+	// Prints out items in alphabetical order
+	printAssociations(groupingItems.sort());
+	printAssociations(nonGroupingItems.sort());
 
 	createClickHandlers();
 }
@@ -174,9 +175,11 @@ function navigatePrevious() {
 function associationMarkup(guid) {
 	var displayText = im.getAssociationDisplayText(guid);
 	var functionCall = "navigateMirror(" + guid + ")";
+	displayText = insertMarkup(displayText, "__", "bold");
+	displayText = insertMarkup(displayText, "_", "italic");
 	var markup = "<div class='row'>" +
-	"<div class='col-md-11'><p>" + displayText + "</p></div>" + 
-	"<div class='col-md-1'>";
+	"<div class='col-sm-11'><p>" + displayText + "</p></div>" + 
+	"<div class='col-sm-1'>";
 
 	if(im.isAssociationAssociatedItemGrouping(guid)) {
 		markup += "<span data-guid='" + guid + "' class='association association-grouping glyphicon glyphicon-folder-open'></span></div>";
@@ -186,4 +189,28 @@ function associationMarkup(guid) {
 
 	return markup;
 	
+}
+
+// When given the display text, the value of the markup, and the tag name,
+// it will encase the text between pairs of the markup specified in a span
+// and removes the markup characters.The name of the span is the tag name 
+// given. It then returns this new string
+function insertMarkup(displayText, markup, tagName) {
+	while(displayText.indexOf(markup) != -1) {
+		displayText = splice(displayText, "<span class=\"" + tagName +"\">", displayText.indexOf(markup), markup.length);
+		console.log(displayText);
+		if(displayText.indexOf(markup) != -1) {
+			displayText = splice(displayText, "</span>", displayText.indexOf(markup), markup.length);
+			console.log(displayText);
+		} else {
+			displayText = displayText + "</span>";
+		}
+	}
+	return displayText;
+}
+
+// Inserts the string specified into the original string at the index specified.
+// It will remove the amount of characters given at that index
+function splice(originalString, insertString, index, remove) {
+	return(originalString.slice(0, index) + insertString + originalString.slice(index + Math.abs(remove)));
 }

@@ -163,8 +163,8 @@ function textboxHandler(element) {
 	var newText = element.val();
 	$("p[data-guid='" + guid + "']").text(newText).show();
 
-	refreshMirror();
-	//im.setAssociationDisplayText(guid, newText);
+	//refreshMirror();
+	im.setAssociationDisplayText(guid, newText);
 	saveMirror();
     element.hide();
 
@@ -174,7 +174,7 @@ function textboxHandler(element) {
 function saveMirror() {
 	im.save(function(error) {
 		if(error) { 
-			alert('Save error: ' + error);
+			console.log('Save Error: ' + error)
 		}
 	});
 }
@@ -182,7 +182,7 @@ function saveMirror() {
 function refreshMirror() {
 	im.refresh(function(error) {
 		if(error) {
-			alert('Refresh error:' + error);
+			console.log('Refresh error:' + error);
 		}
 	});
 }

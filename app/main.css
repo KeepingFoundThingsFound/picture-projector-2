@@ -14,3 +14,23 @@ span.association-grouping {
 .italic {
 	font-style: italic;
 }
+
+.association-row {
+	padding: 7px 0 7px 0;
+}
+
+.association-row p {
+	margin: 0;
+}
+.association-row:nth-of-type(odd) {
+    background: #EBEBEB;
+}
+
+.association-row:hover {
+	background: #e0e0e0;
+}
+
+input {
+	padding: 0;
+	margin: 0;
+}

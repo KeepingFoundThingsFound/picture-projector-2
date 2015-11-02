@@ -130,15 +130,62 @@ function printAssociations(associationList) {
 }
 
 // Creates the JS click handlers for the various associations and links
+// Also creates the handlers for the textbox editing of associations
 function createClickHandlers() {
 	$(".association-grouping").click(function(){
 		var guid = $(this).attr('data-guid');
 		navigateMirror(guid);
 	});
 
+	$('.assoc-displaytext').on('click', function() {
+		var guid = $(this).attr('data-guid');
+		$(this).hide();
+		$('#' + guid).show();
+	});
+	
+	$('.assoc-textbox').on('blur', function() {
+		var element = $(this);
+		textboxHandler(element);
+    });
+
+	$('.assoc-textbox').keypress(function (e) {
+		if(e.which == 13) {
+			var element = $(this);
+			textboxHandler(element);
+		}
+	});
+
 	$("#previous-link").on("click", navigatePrevious);
 }
 
+function textboxHandler(element) {
+	var guid = element.attr('id');
+	var newText = element.val();
+	$("p[data-guid='" + guid + "']").text(newText).show();
+
+	refreshMirror();
+	//im.setAssociationDisplayText(guid, newText);
+	saveMirror();
+    element.hide();
+
+}
+
+// Saves the current itemMirror object
+function saveMirror() {
+	im.save(function(error) {
+		if(error) { 
+			alert('Save error: ' + error);
+		}
+	});
+}
+
+function refreshMirror() {
+	im.refresh(function(error) {
+		if(error) {
+			alert('Refresh error:' + error);
+		}
+	});
+}
 
 // Attempts to navigate and display a new itemMirror association
 function navigateMirror(guid) {
@@ -177,15 +224,17 @@ function associationMarkup(guid) {
 	var functionCall = "navigateMirror(" + guid + ")";
 	displayText = insertMarkup(displayText, "__", "bold");
 	displayText = insertMarkup(displayText, "_", "italic");
-	var markup = "<div class='row'>" +
-	"<div class='col-sm-11'><p>" + displayText + "</p></div>" + 
-	"<div class='col-sm-1'>";
+	var markup = "<div class='row association-row'>" +
+	"<div class='col-xs-11'><p data-guid='" + guid + "' class='assoc-displaytext'>" + displayText + "</p></div>" + 
+	"<div class='col-xs-1'>";
 
 	if(im.isAssociationAssociatedItemGrouping(guid)) {
 		markup += "<span data-guid='" + guid + "' class='association association-grouping glyphicon glyphicon-folder-open'></span></div>";
 	} else {
 		markup += "<span class='association association-file glyphicon glyphicon-file'></span></div>";
 	}
+
+	markup +="<input class='assoc-textbox' id='" + guid + "' type='textbox' style='display:none;' value='" + displayText + "' />";
 
 	return markup;
 	

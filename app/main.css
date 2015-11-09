@@ -22,9 +22,6 @@ span.association-grouping {
 .association-row p {
 	margin: 0;
 }
-.association-row:nth-of-type(odd) {
-    background: #EBEBEB;
-}
 
 .association-row:hover {
 	background: #e0e0e0;

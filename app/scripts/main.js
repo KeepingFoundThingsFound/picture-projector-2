@@ -142,7 +142,7 @@ function createClickHandlers() {
 		$(this).hide();
 		$('#' + guid).show();
 	});
-	
+
 	$('.assoc-textbox').on('blur', function() {
 		var element = $(this);
 		textboxHandler(element);
@@ -163,18 +163,18 @@ function textboxHandler(element) {
 	var newText = element.val();
 	$("p[data-guid='" + guid + "']").text(newText).show();
 
-	//refreshMirror();
 	im.setAssociationDisplayText(guid, newText);
 	saveMirror();
-    element.hide();
-
+  element.hide();
 }
 
 // Saves the current itemMirror object
 function saveMirror() {
 	im.save(function(error) {
-		if(error) { 
-			console.log('Save Error: ' + error)
+		if(error) {
+			console.log('Save Error: ' + error);
+		} else {
+			console.log('Successfully saved.');
 		}
 	});
 }
@@ -197,7 +197,7 @@ function navigateMirror(guid) {
 			refreshIMDisplay();
 		}
 	});
-	
+
 }
 
 // Prints the previous link to go back up
@@ -222,10 +222,10 @@ function navigatePrevious() {
 function associationMarkup(guid) {
 	var displayText = im.getAssociationDisplayText(guid);
 	var functionCall = "navigateMirror(" + guid + ")";
-	displayText = insertMarkup(displayText, "__", "bold");
-	displayText = insertMarkup(displayText, "_", "italic");
+	// displayText = insertMarkup(displayText, "__", "bold");
+	// displayText = insertMarkup(displayText, "_", "italic");
 	var markup = "<div class='row association-row'>" +
-	"<div class='col-xs-11'><p data-guid='" + guid + "' class='assoc-displaytext'>" + displayText + "</p></div>" + 
+	"<div class='col-xs-11'><p data-guid='" + guid + "' class='assoc-displaytext'>" + displayText + "</p></div>" +
 	"<div class='col-xs-1'>";
 
 	if(im.isAssociationAssociatedItemGrouping(guid)) {
@@ -234,15 +234,15 @@ function associationMarkup(guid) {
 		markup += "<span class='association association-file glyphicon glyphicon-file'></span></div>";
 	}
 
-	markup +="<input class='assoc-textbox' id='" + guid + "' type='textbox' style='display:none;' value='" + displayText + "' />";
+	markup +="<textarea class='assoc-textbox form-control' rows='5' id='" + guid + "' style='display:none;'>" + displayText + "</textarea>";
 
 	return markup;
-	
+
 }
 
 // When given the display text, the value of the markup, and the tag name,
 // it will encase the text between pairs of the markup specified in a span
-// and removes the markup characters.The name of the span is the tag name 
+// and removes the markup characters.The name of the span is the tag name
 // given. It then returns this new string
 function insertMarkup(displayText, markup, tagName) {
 	while(displayText.indexOf(markup) != -1) {

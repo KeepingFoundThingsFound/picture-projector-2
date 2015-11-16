@@ -1,7 +1,7 @@
 /*
  * name: main.js
  * Authors: Tanner Garrett, Brandon Thepvongsa
- * Discription: JavaScript used to create the functionality of FolderDocs
+ * Description: JavaScript used to create the functionality of FolderDocs
 */
 
 $(document).ready(function() {
@@ -96,11 +96,12 @@ function refreshIMDisplay() {
 	}
 
 	var entryDisplayName;
-	$("#display").empty();
+	$("#groupingItems").empty();
+	$("#nonGroupingItems").empty();
 
 	// Creates the previous/back button
 	previous = im.getCreator();
-	$("#display").append(printPrevious());
+	$("#toolbar").append(printPrevious());
 
 	associations = im.listAssociations();
 	var length = associations.length;
@@ -117,15 +118,33 @@ function refreshIMDisplay() {
 	}
 
 	// Prints out items in alphabetical order
-	printAssociations(groupingItems.sort());
-	printAssociations(nonGroupingItems.sort());
+	printAssociations(orderAssociations(groupingItems), $("#groupingItems"));
+	printAssociations(nonGroupingItems.sort(), $("#nonGroupingItems"));
 
 	createClickHandlers();
 }
 
-function printAssociations(associationList) {
+function orderAssociations(associationList) {
+	var orderedItems = [];
+	var nonOrderedItems = [];
+
 	for(var i = 0; i < associationList.length; i++) {
-		$("#display").append(associationMarkup(associationList[i]));
+		var guid = associationList[i];
+		var placement = im.getAssociationNamespaceAttribute('order', guid, 'folder-docs');
+		if(placement) {
+			orderedItems[placement] = guid;
+		} else {
+			nonOrderedItems.push(guid);
+		}
+	}
+
+	// Return an array of unorderedItems + orderedItems (in that order)
+	return nonOrderedItems.concat(orderedItems);
+}
+
+function printAssociations(associationList, div) {
+	for(var i = 0; i < associationList.length; i++) {
+		div.append(associationMarkup(associationList[i]));
 	}
 }
 
@@ -156,6 +175,14 @@ function createClickHandlers() {
 		}
 	});
 
+	$("#groupingItems").sortable({
+		// placeholder: "drop-placeholder",
+		stop: function() {
+			var order = $("#groupingItems").sortable("toArray", {attribute: 'data-guid'});
+			saveOrder(order);
+		}
+	});
+
 	$("#previous-link").on("click", navigatePrevious);
 }
 
@@ -180,6 +207,7 @@ function saveMirror() {
 	});
 }
 
+// Refreshes the itemMirror object
 function refreshMirror() {
 	im.refresh(function(error) {
 		if(error) {
@@ -201,7 +229,7 @@ function navigateMirror(guid) {
 
 }
 
-// Prints the previous link to go back up
+// Prints the previous link to go back up to parent/creator
 function printPrevious() {
 	if(previous) {
 		return "<p><a href='#' id='previous-link'><< back</a></p>";
@@ -218,6 +246,24 @@ function navigatePrevious() {
 	}
 }
 
+// Attempts to save the order of the associations by matching
+// each associations guid with the array of guids returned on a reordering drop.
+function saveOrder(displayedAssocs) {
+	// Loop through each association
+	for(var i = 0; i < associations.length; i++) {
+		// Loop through each association we grabbed from the drop event
+		for(var k = 0; k < displayedAssocs.length; k++) {
+			// Find where the guids match, k will equal the proper order placement
+			// when we find a match
+			if(associations[i] == displayedAssocs[k]) {
+				im.setAssociationNamespaceAttribute('order', k, associations[i], 'folder-docs');
+			}
+		}
+	}
+	// After we've set all the proper namespace attributes, let's save the itemMirror
+	saveMirror();
+}
+
 // Returns the markup for an association to be printed to the screen
 // Differentiates between a groupingItem and nonGroupinItem via icon
 function associationMarkup(guid) {
@@ -225,7 +271,7 @@ function associationMarkup(guid) {
 	var functionCall = "navigateMirror(" + guid + ")";
 	// displayText = insertMarkup(displayText, "__", "bold");
 	// displayText = insertMarkup(displayText, "_", "italic");
-	var markup = "<div class='row association-row'>" +
+	var markup = "<div data-guid='" + guid + "' class='row association-row'>" +
 	"<div class='col-xs-11'><p data-guid='" + guid + "' class='assoc-displaytext'>" + displayText + "</p></div>" +
 	"<div class='col-xs-1'>";
 
@@ -255,13 +301,13 @@ jQuery.fn.putCursorAtEnd = function() {
       var len = $(this).val().length * 2;
 
       this.setSelectionRange(len, len);
-    
+
     } else {
     // ... otherwise replace the contents with itself
     // (Doesn't work in Google Chrome)
 
       $(this).val($(this).val());
-      
+
     }
 
     // Scroll to the bottom, in case we're in a tall textarea

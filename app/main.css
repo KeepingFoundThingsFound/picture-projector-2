@@ -35,3 +35,7 @@ input {
 .glyphicon-file {
 	color: #64ABFC;
 }
+
+.drop-placeholder {
+	border-top: 1px dashed black;
+}

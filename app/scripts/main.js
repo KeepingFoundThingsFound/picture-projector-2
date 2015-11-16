@@ -2,6 +2,9 @@
  * name: main.js
  * Authors: Tanner Garrett, Brandon Thepvongsa
  * Description: JavaScript used to create the functionality of FolderDocs
+ * TODO:
+ * -Marked.js has been changed to not enclose given markup in <p> tags, need
+ * to create own renderer later
 */
 
 $(document).ready(function() {
@@ -144,7 +147,11 @@ function orderAssociations(associationList) {
 
 function printAssociations(associationList, div) {
 	for(var i = 0; i < associationList.length; i++) {
-		div.append(associationMarkup(associationList[i]));
+		var originalDisplayText = im.getAssociationDisplayText(associationList[i]);
+		var appendingObject = associationMarkup(associationList[i]);
+		div.append(appendingObject);
+		$("#" + associationList[i]).data("originalDisplayText", originalDisplayText);
+		console.log($("#" + associationList[i]).data("originalDisplayText"));
 	}
 }
 
@@ -189,7 +196,7 @@ function createClickHandlers() {
 function textboxHandler(element) {
 	var guid = element.attr('id');
 	var newText = element.val();
-	$("p[data-guid='" + guid + "']").text(newText).show();
+	$("p[data-guid='" + guid + "']").text(marked(newText)).show();
 
 	im.setAssociationDisplayText(guid, newText);
 	saveMirror();
@@ -267,12 +274,11 @@ function saveOrder(displayedAssocs) {
 // Returns the markup for an association to be printed to the screen
 // Differentiates between a groupingItem and nonGroupinItem via icon
 function associationMarkup(guid) {
-	var displayText = im.getAssociationDisplayText(guid);
+	var originalDisplayText = im.getAssociationDisplayText(guid);
+	var displayTextWithMarkdown = marked(originalDisplayText);
 	var functionCall = "navigateMirror(" + guid + ")";
-	// displayText = insertMarkup(displayText, "__", "bold");
-	// displayText = insertMarkup(displayText, "_", "italic");
 	var markup = "<div data-guid='" + guid + "' class='row association-row'>" +
-	"<div class='col-xs-11'><p data-guid='" + guid + "' class='assoc-displaytext'>" + displayText + "</p></div>" +
+	"<div class='col-xs-11'><p data-guid='" + guid + "' class='assoc-displaytext'>" + displayTextWithMarkdown + "</p></div>" +
 	"<div class='col-xs-1'>";
 
 	if(im.isAssociationAssociatedItemGrouping(guid)) {
@@ -281,7 +287,7 @@ function associationMarkup(guid) {
 		markup += "<span class='association association-file glyphicon glyphicon-file'></span></div>";
 	}
 
-	markup +="<textarea class='assoc-textbox form-control' rows='5' id='" + guid + "' style='display:none;'>" + displayText + "</textarea>";
+	markup +="<textarea class='assoc-textbox form-control' rows='5' id='" + guid + "' style='display:none;'>" + originalDisplayText + "</textarea>";
 
 	return markup;
 
@@ -317,27 +323,3 @@ jQuery.fn.putCursorAtEnd = function() {
   });
 
 };
-
-// When given the display text, the value of the markup, and the tag name,
-// it will encase the text between pairs of the markup specified in a span
-// and removes the markup characters.The name of the span is the tag name
-// given. It then returns this new string
-// function insertMarkup(displayText, markup, tagName) {
-// 	while(displayText.indexOf(markup) != -1) {
-// 		displayText = splice(displayText, "<span class=\"" + tagName +"\">", displayText.indexOf(markup), markup.length);
-// 		console.log(displayText);
-// 		if(displayText.indexOf(markup) != -1) {
-// 			displayText = splice(displayText, "</span>", displayText.indexOf(markup), markup.length);
-// 			console.log(displayText);
-// 		} else {
-// 			displayText = displayText + "</span>";
-// 		}
-// 	}
-// 	return displayText;
-// }
-
-// Inserts the string specified into the original string at the index specified.
-// It will remove the amount of characters given at that index
-// function splice(originalString, insertString, index, remove) {
-// 	return(originalString.slice(0, index) + insertString + originalString.slice(index + Math.abs(remove)));
-// }

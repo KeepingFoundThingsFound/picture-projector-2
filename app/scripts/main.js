@@ -141,6 +141,7 @@ function createClickHandlers() {
 		var guid = $(this).attr('data-guid');
 		$(this).hide();
 		$('#' + guid).show();
+		$('#' + guid).putCursorAtEnd();
 	});
 
 	$('.assoc-textbox').on('blur', function() {
@@ -240,26 +241,57 @@ function associationMarkup(guid) {
 
 }
 
+jQuery.fn.putCursorAtEnd = function() {
+
+  return this.each(function() {
+
+    $(this).focus()
+
+    // If this function exists...
+    if (this.setSelectionRange) {
+      // ... then use it (Doesn't work in IE)
+
+      // Double the length because Opera is inconsistent about whether a carriage return is one character or two. Sigh.
+      var len = $(this).val().length * 2;
+
+      this.setSelectionRange(len, len);
+    
+    } else {
+    // ... otherwise replace the contents with itself
+    // (Doesn't work in Google Chrome)
+
+      $(this).val($(this).val());
+      
+    }
+
+    // Scroll to the bottom, in case we're in a tall textarea
+    // (Necessary for Firefox and Google Chrome)
+    this.scrollTop = 999999;
+
+  });
+
+};
+
 // When given the display text, the value of the markup, and the tag name,
 // it will encase the text between pairs of the markup specified in a span
 // and removes the markup characters.The name of the span is the tag name
 // given. It then returns this new string
-function insertMarkup(displayText, markup, tagName) {
-	while(displayText.indexOf(markup) != -1) {
-		displayText = splice(displayText, "<span class=\"" + tagName +"\">", displayText.indexOf(markup), markup.length);
-		console.log(displayText);
-		if(displayText.indexOf(markup) != -1) {
-			displayText = splice(displayText, "</span>", displayText.indexOf(markup), markup.length);
-			console.log(displayText);
-		} else {
-			displayText = displayText + "</span>";
-		}
-	}
-	return displayText;
-}
+// function insertMarkup(displayText, markup, tagName) {
+// 	while(displayText.indexOf(markup) != -1) {
+// 		displayText = splice(displayText, "<span class=\"" + tagName +"\">", displayText.indexOf(markup), markup.length);
+// 		console.log(displayText);
+// 		if(displayText.indexOf(markup) != -1) {
+// 			displayText = splice(displayText, "</span>", displayText.indexOf(markup), markup.length);
+// 			console.log(displayText);
+// 		} else {
+// 			displayText = displayText + "</span>";
+// 		}
+// 	}
+// 	return displayText;
+// }
 
 // Inserts the string specified into the original string at the index specified.
 // It will remove the amount of characters given at that index
-function splice(originalString, insertString, index, remove) {
-	return(originalString.slice(0, index) + insertString + originalString.slice(index + Math.abs(remove)));
-}
+// function splice(originalString, insertString, index, remove) {
+// 	return(originalString.slice(0, index) + insertString + originalString.slice(index + Math.abs(remove)));
+// }

@@ -101,6 +101,7 @@ function refreshIMDisplay() {
 	var entryDisplayName;
 	$("#groupingItems").empty();
 	$("#nonGroupingItems").empty();
+	$("#toolbar").empty();
 
 	// Creates the previous/back button
 	previous = im.getCreator();

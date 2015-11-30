@@ -104,8 +104,7 @@ function refreshIMDisplay() {
 	$("#toolbar").empty();
 
 	// Creates the previous/back button
-	previous = im.getCreator();
-	$("#toolbar").append(printPrevious());
+	$("#toolbar").append(printToolbar());
 
 	associations = im.listAssociations();
 	var length = associations.length;
@@ -166,9 +165,11 @@ function createClickHandlers() {
 
 	$('.assoc-displaytext').on('click', function() {
 		var guid = $(this).attr('data-guid');
-		$(this).hide();
-		$('#' + guid).show();
-		$('#' + guid).putCursorAtEnd();
+
+		var textbox = $('#' + guid);
+		$("h4[data-guid='" + guid + "']").show();
+		textbox.show();
+		textbox.putCursorAtEnd();
 	});
 
 	$('.assoc-textbox').on('blur', function() {
@@ -183,6 +184,12 @@ function createClickHandlers() {
 		}
 	});
 
+	$('.assoc-textbox').live('keyup', function(e) {
+		var guid = $(this).attr('id');
+		var newText = $(this).val();
+		$("div[data-guid='" + guid + "'] .assoc-displaytext").html(marked(newText));
+	});
+
 	$("#groupingItems").sortable({
 		// placeholder: "drop-placeholder",
 		stop: function() {
@@ -194,11 +201,14 @@ function createClickHandlers() {
 	$("#previous-link").on("click", navigatePrevious);
 }
 
+// Handles the showing/hiding/saving functionality of the edit textareas
 function textboxHandler(element) {
 	var guid = element.attr('id');
 	var newText = element.val();
-	$("p[data-guid='" + guid + "']").text(marked(newText)).show();
+	$("div[data-guid='" + guid + "'] .assoc-displaytext").html(marked(newText)).show();
 
+	// Hides the "live preview" header
+	$("h4[data-guid='" + guid + "']").hide();
 	im.setAssociationDisplayText(guid, newText);
 	saveMirror();
   element.hide();
@@ -238,10 +248,16 @@ function navigateMirror(guid) {
 }
 
 // Prints the previous link to go back up to parent/creator
-function printPrevious() {
+function printToolbar() {
+	var result = "";
+	var previous = im.getCreator();
 	if(previous) {
-		return "<p><a href='#' id='previous-link'><< back</a></p>";
+		result += "<p><a href='#' id='previous-link'><< back</a></p>";
 	}
+
+	result += "<h3>" + im.getDisplayName() + "</h3>";
+
+	return result;
 }
 
 // Navigates and refreshes the display to the previous mirror
@@ -279,7 +295,11 @@ function associationMarkup(guid) {
 	var displayTextWithMarkdown = marked(originalDisplayText);
 	var functionCall = "navigateMirror(" + guid + ")";
 	var markup = "<div data-guid='" + guid + "' class='row association-row'>" +
-	"<div class='col-xs-11'><p data-guid='" + guid + "' class='assoc-displaytext'>" + displayTextWithMarkdown + "</p></div>" +
+	"<div class='col-xs-11'><textarea class='assoc-textbox form-control' rows='5' id='" + guid + "' style='display:none;'>" + originalDisplayText
+	+ "</textarea><h4 style='display:none;' data-guid='" + guid + "'>Live preview:</h4>" +
+
+	// Display text area
+	"<div data-guid='" + guid + "' class='assoc-displaytext'>" + displayTextWithMarkdown + "</div></div>" +
 	"<div class='col-xs-1'>";
 
 	if(im.isAssociationAssociatedItemGrouping(guid)) {
@@ -288,7 +308,6 @@ function associationMarkup(guid) {
 		markup += "<span class='association association-file glyphicon glyphicon-file'></span></div>";
 	}
 
-	markup +="<textarea class='assoc-textbox form-control' rows='5' id='" + guid + "' style='display:none;'>" + originalDisplayText + "</textarea>";
 
 	return markup;
 

@@ -9,6 +9,8 @@
 	    <link rel="stylesheet" href="main.css" />
 	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
 	    <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,700,300' rel='stylesheet' type='text/css'>
+	    <!-- Needed for google drive api usage and authentication -->
+	    <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
 	</head>
 	<body>
 		<header class="navbar navbar-default">
@@ -16,8 +18,8 @@
 		</header>
 		<main class="container">
 			<div class="jumbotron">
-				<p>Get started by authenticating with Dropbox!</p>
-				<button class="btn btn-default" id="dboxButton">Authenticate with Dropbox</button>
+				<p>Get started by authenticating with Google Drive!</p>
+				<button class="btn btn-default" id="auth-button">Authenticate google drive</button>
 			</div>
 			<div id="toolbar"></div>
 			<div id="groupingItems"></div>

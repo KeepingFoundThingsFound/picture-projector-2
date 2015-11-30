@@ -8,8 +8,59 @@
 */
 
 $(document).ready(function() {
-	$("#dboxButton").on("click", connectDropbox);
+	$("#auth-button").on("click", connectDrive);
 });
+
+// This function returns a promise that handles our authentication
+function authorizeDrive() {
+  // Your Client ID can be retrieved from your project in the Google
+  // Developer Console, https://console.developers.google.com
+  var CLIENT_ID = '681676105907-omec1itmltlnknrdfo150qcn7pdt95ri.apps.googleusercontent.com';
+  var auth = $.Deferred();
+  // Need full permissions for everything to work. This is the easiest option
+  var SCOPES = ['https://www.googleapis.com/auth/drive'];
+
+  checkAuth();
+
+  function checkAuth() {
+    gapi.auth.authorize(
+      {
+        'client_id': CLIENT_ID,
+        'scope': SCOPES.join(' '),
+        'immediate': true
+      }, handleAuthResult);
+  }
+
+  /**
+    * Handle response from authorization server.
+    *
+    * @param {Object} authResult Authorization result.
+    */
+  function handleAuthResult(authResult) {
+    if (authResult && !authResult.error) {
+	    // Load the API
+	    gapi.client.load('drive', 'v2', function() {
+	    	// Once this callback is executed, that means we've authorized just as expected
+	    	// and can therefore resolve the promise
+	    	auth.resolve();
+	    });
+    } else {
+    	// Reject our promise
+    	auth.reject(authResult);
+    }
+  }
+
+  function handleAuthClick() {
+    console.log('Authorizing...');
+    gapi.auth.authorize(
+      {client_id: CLIENT_ID, scope: SCOPES, immediate: false},
+      handleAuthResult);
+    return false;
+  }
+
+  // Returns the promise object from our deferred object
+  return auth.promise();
+}
 
 var
 	im,
@@ -17,17 +68,6 @@ var
 	associations,
 	dropboxClientCredentials,
 	dropboxClient;
-
-dropboxClientCredentials = {
-	key: config.key,
-	secret: config.secret
-};
-
-dropboxClient = new Dropbox.Client(dropboxClientCredentials);
-
-dropboxClient.authDriver(new Dropbox.AuthDriver.Redirect({
-	rememberUser: true
-}));
 
 var authenticatedClient = null;
 
@@ -67,21 +107,18 @@ function constructIMObject() {
 }
 
 // Directs the client to Dropbox's authentication page to sign in.
-function connectDropbox() {
-	if(authenticatedClient) {
-		console.log('Dropbox authenticated');
-	} else {
-		console.log('Dropbox authenticating...');
-		dropboxClient.authenticate(function (error, client) {
-			if(error) {
-				console.log('Dropbox failed to authenticate');
-			} else {
-				authenticatedClient = client;
-				console.log('Dropbox authenticated');
-				constructIMObject();
-			}
-		});
-	}
+function connectDrive() {
+	var authenticated = authorizeDrive();
+
+	authenticated.then(function() {
+		alert('Yay, google has successfully authenticated');
+		// authenticatedClient = client;
+		// console.log('Dropbox authenticated');
+		// constructIMObject();
+	}).fail(function(error) {
+		alert('Uh oh, couldn\'nt autherticate. Check the console for details');
+		console.log(error);
+	});
 }
 
 // Signs current client out of Dropbox

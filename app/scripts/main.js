@@ -7,8 +7,13 @@
  * to create own renderer later
 */
 
+// Declare this so we can set it globally once it's loaded with requirejs
+var ItemMirror;
+
 $(document).ready(function() {
-	requirejs(['../itemMirror/scripts/ItemMirror'], function(im) {
+	requirejs(['../itemMirror/scripts/ItemMirror'], function(IM) {
+		// Sets ItemMirror globally, that way we don't have to nest everything
+		ItemMirror = IM;
 		$("#auth-button").on("click", connectDrive);
 	});
 });
@@ -111,10 +116,9 @@ function connectDrive() {
 	var authenticated = authorizeDrive();
 
 	authenticated.then(function() {
-		alert('Yay, google has successfully authenticated');
-		// authenticatedClient = client;
-		// console.log('Dropbox authenticated');
-		// constructIMObject();
+		console.log('Successful Authentication!');
+		authenticatedClient = gapi.client;
+		constructIMObject();
 	}).fail(function(error) {
 		alert('Uh oh, couldn\'nt autherticate. Check the console for details');
 		console.log(error);

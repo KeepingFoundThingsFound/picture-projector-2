@@ -8,7 +8,9 @@
 */
 
 $(document).ready(function() {
-	$("#auth-button").on("click", connectDrive);
+	requirejs(['../itemMirror/scripts/ItemMirror'], function(im) {
+		$("#auth-button").on("click", connectDrive);
+	});
 });
 
 // This function returns a promise that handles our authentication

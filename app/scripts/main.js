@@ -23,39 +23,37 @@ function authorizeDrive() {
   checkAuth();
 
   function checkAuth() {
-    gapi.auth.authorize(
-      {
+  	// Load the newer version of the API, the old version is a pain to deal with
+  	gapi.load('auth2', function() {
+  		gapi.auth2.init({
         'client_id': CLIENT_ID,
         'scope': SCOPES.join(' '),
         'immediate': true
-      }, handleAuthResult);
+  		});
+
+  		var googAuth = gapi.auth2.getAuthInstance();
+
+  		if (googAuth.isSignedIn.get()) {
+  			loadDriveAPI();
+  		} else {
+  			// Need to have them sign in
+  			googAuth.signIn().then(function() {
+  				loadDriveAPI();
+  			}, function(error) {
+  				// Failed to authenticate for some reason
+  				auth.reject(error);
+	  		});
+  		}
+  	});
   }
 
-  /**
-    * Handle response from authorization server.
-    *
-    * @param {Object} authResult Authorization result.
-    */
-  function handleAuthResult(authResult) {
-    if (authResult && !authResult.error) {
-	    // Load the API
-	    gapi.client.load('drive', 'v2', function() {
-	    	// Once this callback is executed, that means we've authorized just as expected
-	    	// and can therefore resolve the promise
-	    	auth.resolve();
-	    });
-    } else {
-    	// Reject our promise
-    	auth.reject(authResult);
-    }
-  }
-
-  function handleAuthClick() {
-    console.log('Authorizing...');
-    gapi.auth.authorize(
-      {client_id: CLIENT_ID, scope: SCOPES, immediate: false},
-      handleAuthResult);
-    return false;
+  // Loads the drive API, and resolves the promise
+  function loadDriveAPI() {
+    gapi.client.load('drive', 'v2', function() {
+    	// Once this callback is executed, that means we've authorized just as expected
+    	// and can therefore resolve the promise
+    	auth.resolve();
+    });
   }
 
   // Returns the promise object from our deferred object

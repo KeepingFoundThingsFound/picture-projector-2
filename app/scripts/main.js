@@ -16,6 +16,7 @@ var
 	previous,
 	associations,
 	dropboxClientCredentials,
+	selectedAssociation,
 	dropboxClient;
 
 dropboxClientCredentials = {
@@ -158,19 +159,21 @@ function printAssociations(associationList, div) {
 // Creates the JS click handlers for the various associations and links
 // Also creates the handlers for the textbox editing of associations
 function createClickHandlers() {
-	$(".association-grouping").click(function(){
-		var guid = $(this).attr('data-guid');
-		navigateMirror(guid);
-	});
+	// $(".association-grouping").click(function(){
+	// 	var guid = $(this).attr('data-guid');
+	// 	navigateMirror(guid);
+	// });
 
-	$('.assoc-displaytext').on('click', function() {
-		var guid = $(this).attr('data-guid');
+	// $('.assoc-displaytext').on('click', function() {
+	// 	// var guid = $(this).attr('data-guid');
+	// 	//
+	// 	// var textbox = $('#' + guid);
+	// 	// $("h4[data-guid='" + guid + "']").show();
+	// 	// textbox.show();
+	// 	// textbox.putCursorAtEnd();
+	// });
 
-		var textbox = $('#' + guid);
-		$("h4[data-guid='" + guid + "']").show();
-		textbox.show();
-		textbox.putCursorAtEnd();
-	});
+	handleDisplaytextClicks();
 
 	$('.assoc-textbox').on('blur', function() {
 		var element = $(this);
@@ -200,6 +203,72 @@ function createClickHandlers() {
 
 	$("#previous-link").on("click", navigatePrevious);
 }
+
+// Handles the logic and timing of the single vs double clicks on
+// display text. Single clicks select the association in preperation
+// to enter edit mode upon another single click, double clicks navigate
+// to that itemmirror object
+function handleDisplaytextClicks() {
+	// $('.association-row').on('click', function() {
+	// 	var element = $(this);
+	// 	selectAssociation(element);
+	// });
+	//
+	// $('.association-row').on('dblclick', function() {
+	// 	var element = $(this);
+	// 	var guid = element.attr('data-guid');
+	// 	navigateMirror(guid);
+	// });
+	var DELAY = 350, clicks = 0, timer = null;
+	$('.association-row').on("click", function(e) {
+		clicks++;  // count clicks
+		var element = $(this);
+		// Check if the element has been selected already
+		var alreadySelected = element.hasClass('selected-association');
+		selectAssociation(element);
+		if(clicks === 1) {
+			timer = setTimeout(function() {
+				// Single click case
+				clicks = 0; // reset counter
+				// If element has been selected already, open edit box
+				if(alreadySelected) { editboxAssociation(element); }
+			}, DELAY);
+		} else {
+			// Double click case
+			clearTimeout(timer);    //prevent single-click action
+			var element = $(this);
+			var guid = element.attr('data-guid');
+			navigateMirror(guid);
+			clicks = 0; // reset counter
+		 }})
+		 .on("dblclick", function(e){
+			 e.preventDefault();  // prevent default dblclick event
+		 });
+	}
+
+function selectAssociation(element) {
+	if(selectedAssociation) {
+		selectedAssociation.removeClass('selected-association');
+	}
+	element.addClass('selected-association');
+	selectedAssociation = element;
+}
+
+// Takes in the row element of the clicked association, selects it
+// by saving the guid as the currently selected guid and highlights
+// the association in view by placing a border around it.
+function editboxAssociation(element) {
+	if(element.hasClass('selected-association')) {
+		// The clicked element is the currently selected element, let's
+		// toggle into edit
+		var guid = element.attr('data-guid');
+		var textbox = $('#' + guid);
+		$("h4[data-guid='" + guid + "']").show();
+		textbox.show();
+		textbox.putCursorAtEnd();
+	}
+}
+
 
 // Handles the showing/hiding/saving functionality of the edit textareas
 function textboxHandler(element) {

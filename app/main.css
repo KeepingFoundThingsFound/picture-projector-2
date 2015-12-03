@@ -36,6 +36,6 @@ input {
 	color: #64ABFC;
 }
 
-.drop-placeholder {
-	border-top: 1px dashed black;
+.selected-association {
+	border: 1px solid #373737;
 }

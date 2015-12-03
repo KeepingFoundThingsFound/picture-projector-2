@@ -37,5 +37,19 @@ input {
 }
 
 .selected-association {
-	border: 1px solid #373737;
+	border: 1px dashed #727272;
+	background: #e0e0e0;
+}
+
+h3.folder-name {
+	text-align: center;
+}
+
+#toolbar {
+	margin-bottom: 20px
+}
+
+.container {
+	box-shadow: 0 0 10px #b3b3b3;
+	margin-bottom: 30px;
 }

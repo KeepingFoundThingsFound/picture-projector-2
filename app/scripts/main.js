@@ -159,20 +159,6 @@ function printAssociations(associationList, div) {
 // Creates the JS click handlers for the various associations and links
 // Also creates the handlers for the textbox editing of associations
 function createClickHandlers() {
-	// $(".association-grouping").click(function(){
-	// 	var guid = $(this).attr('data-guid');
-	// 	navigateMirror(guid);
-	// });
-
-	// $('.assoc-displaytext').on('click', function() {
-	// 	// var guid = $(this).attr('data-guid');
-	// 	//
-	// 	// var textbox = $('#' + guid);
-	// 	// $("h4[data-guid='" + guid + "']").show();
-	// 	// textbox.show();
-	// 	// textbox.putCursorAtEnd();
-	// });
-
 	handleDisplaytextClicks();
 
 	$('.assoc-textbox').on('blur', function() {
@@ -320,11 +306,15 @@ function navigateMirror(guid) {
 function printToolbar() {
 	var result = "";
 	var previous = im.getCreator();
-	if(previous) {
-		result += "<p><a href='#' id='previous-link'><< back</a></p>";
-	}
 
-	result += "<h3>" + im.getDisplayName() + "</h3>";
+	// Print the fragment name
+	result += "<h3 class='folder-name'>" + im.getDisplayName() + "</h3>";
+
+	// Print the previous link if we have one
+	if(previous) {
+		result += "<button type='button' class='btn btn-primary' id='previous-link'>"
+		+ "<span class='glyphicon glyphicon glyphicon-level-up'></span> Back</button>";
+	}
 
 	return result;
 }

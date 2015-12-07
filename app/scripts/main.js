@@ -82,22 +82,19 @@ function getClient() {
 
 // Constructs the root ItemMirror object from the root of the Dropbox.
 function constructIMObject() {
-	dropboxXooMLUtility = {
-		fragmentURI: '/XooML2.xml',
-		driverURI: 'DropboxXooMLUtility',
-		dropboxClient: dropboxClient
+	driveXooMLUtility = {
+		clientInterface: gapi
 	};
-	dropboxItemUtility = {
-		driverURI: 'DropboxItemUtility',
-		dropboxClient: dropboxClient
+	driveItemUtility = {
+		clientInterface: gapi
 	};
 	mirrorSyncUtility = {
 		utilityURI: 'MirrorSyncUtility'
 	};
 	var options = {
-		groupingItemURI: "/",
-		xooMLDriver: dropboxXooMLUtility,
-		itemDriver: dropboxItemUtility,
+		groupingItemURI: "root",
+		xooMLDriver: driveXooMLUtility,
+		itemDriver: driveItemUtility,
 		syncDriver: mirrorSyncUtility
 	};
 	im = new ItemMirror(options, function(error, newMirror) {

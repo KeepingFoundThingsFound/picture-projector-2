@@ -9,6 +9,66 @@
 
 $(document).ready(function() {
 	$("#dboxButton").on("click", connectDropbox);
+	//initialize context menu
+	$.contextMenu({
+            selector: '.context-menu-one', 
+            items: {
+                "edit": {
+                	name: "Edit DisplayText",
+                	callback: function(e) {
+                		var element = $(this);
+                		selectAssociation(element);
+                		editboxAssociation(element);
+                	}
+                },
+                "open": {
+                	name: "Open Subfolder",
+                	callback: function(e) {
+                		var elementGUID = $(this).attr('data-guid');
+                		if(im.isAssociationAssociatedItemGrouping(elementGUID)) {
+                			navigateMirror(elementGUID);
+                		}
+                	},
+                	// Disabled if the element is a non-grouping item
+                	disabled: function() {return !im.isAssociationAssociatedItemGrouping($(this).attr('data-guid')); }
+                },
+                "copy" : {
+                	name: "Copy",
+                	disabled: true
+                },
+                "moveUp": {
+                	name: "Move assocition up in Display",
+                	callback: function(e) {
+                		var element = $(this);
+                		element.prev().before(element);
+                		saveOrder();
+                	},
+                	// Disabled if there is no element before it in the list or if it is a non-grouping item
+                	disabled: function() {return (!$(this).prev()[0] || 
+                		!im.isAssociationAssociatedItemGrouping($(this).attr('data-guid'))); }
+                },
+                "moveDown": {
+                	name: "Move association down in Display",
+                	callback: function(e) {
+                		var element = $(this);
+                		element.next().after(element);
+                		saveOrder();
+                	},
+                	// Disabled if there is no element after it in the list or if it is a non-grouping item
+                	disabled: function() {return (!$(this).next()[0] || 
+                		!im.isAssociationAssociatedItemGrouping($(this).attr('data-guid'))); }
+                },
+                "delete": {
+                	name: "Delete",
+                	disabled: true
+                },
+                "sep1": "----------",
+                "openInCloud": {
+                	name: "Open in cloud store",
+                	disabled: true
+                }
+            }
+        });
 });
 
 var
@@ -182,8 +242,7 @@ function createClickHandlers() {
 	$("#groupingItems").sortable({
 		// placeholder: "drop-placeholder",
 		stop: function() {
-			var order = $("#groupingItems").sortable("toArray", {attribute: 'data-guid'});
-			saveOrder(order);
+			saveOrder();
 		}
 	});
 
@@ -219,7 +278,8 @@ function handleDisplaytextClicks() {
 				// If element has been selected already, open edit box
 				if(alreadySelected) { editboxAssociation(element); }
 			}, DELAY);
-		} else {
+		// If element is a grouping item
+		} else if(im.isAssociationAssociatedItemGrouping(element.attr('data-guid'))) {
 			// Double click case
 			clearTimeout(timer);    //prevent single-click action
 			var element = $(this);
@@ -331,7 +391,8 @@ function navigatePrevious() {
 
 // Attempts to save the order of the associations by matching
 // each associations guid with the array of guids returned on a reordering drop.
-function saveOrder(displayedAssocs) {
+function saveOrder() {
+	var displayedAssocs = $("#groupingItems").sortable("toArray", {attribute: 'data-guid'});
 	// Loop through each association
 	for(var i = 0; i < associations.length; i++) {
 		// Loop through each association we grabbed from the drop event
@@ -353,7 +414,7 @@ function associationMarkup(guid) {
 	var originalDisplayText = im.getAssociationDisplayText(guid);
 	var displayTextWithMarkdown = marked(originalDisplayText);
 	var functionCall = "navigateMirror(" + guid + ")";
-	var markup = "<div data-guid='" + guid + "' class='row association-row'>" +
+	var markup = "<div data-guid='" + guid + "' class='row association-row context-menu-one'>" +
 	"<div class='col-xs-11'><textarea class='assoc-textbox form-control' rows='5' id='" + guid + "' style='display:none;'>" + originalDisplayText
 	+ "</textarea><h4 style='display:none;' data-guid='" + guid + "'>Live preview:</h4>" +
 

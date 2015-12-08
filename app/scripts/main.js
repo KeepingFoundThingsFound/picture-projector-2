@@ -8,14 +8,9 @@
 */
 
 // Declare this so we can set it globally once it's loaded with requirejs
-var ItemMirror;
 
 $(document).ready(function() {
-	requirejs(['../itemMirror/scripts/ItemMirror'], function(IM) {
-		// Sets ItemMirror globally, that way we don't have to nest everything
-		ItemMirror = IM;
-		$("#auth-button").on("click", connectDrive);
-	});
+	$("#auth-button").on("click", connectDrive);
 });
 
 // This function returns a promise that handles our authentication

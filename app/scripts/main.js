@@ -37,7 +37,7 @@ $(document).ready(function() {
                 	disabled: true
                 },
                 "moveUp": {
-                	name: "Move assocition up in Display",
+                	name: "Move Assocition Up",
                 	callback: function(e) {
                 		var element = $(this);
                 		element.prev().before(element);
@@ -48,7 +48,7 @@ $(document).ready(function() {
                 		!im.isAssociationAssociatedItemGrouping($(this).attr('data-guid'))); }
                 },
                 "moveDown": {
-                	name: "Move association down in Display",
+                	name: "Move Association Down",
                 	callback: function(e) {
                 		var element = $(this);
                 		element.next().after(element);
@@ -64,7 +64,7 @@ $(document).ready(function() {
                 },
                 "sep1": "----------",
                 "openInCloud": {
-                	name: "Open in cloud store",
+                	name: "Open in Cloud Store",
                 	disabled: true
                 }
             }
@@ -86,8 +86,8 @@ dropboxClientCredentials = {
 
 dropboxClient = new Dropbox.Client(dropboxClientCredentials);
 
-dropboxClient.authDriver(new Dropbox.AuthDriver.Redirect({
-	rememberUser: true
+dropboxClient.authDriver(new Dropbox.AuthDriver.Popup({
+	receiverUrl: "http://localhost:9000/app/misc/oauth_reciever.html"
 }));
 
 var authenticatedClient = null;

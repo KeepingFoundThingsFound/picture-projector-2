@@ -243,6 +243,21 @@ function createClickHandlers() {
 		$("div[data-guid='" + guid + "'] .assoc-displaytext").html(marked(newText));
 	});
 
+    $('.glyphicon-folder-open').on('click', function(e) {
+        var guid = $(this).attr("data-guid");
+        navigateMirror(guid);
+    });
+
+    $('.glyphicon-file').on('click', function(e) {
+        console.log("guid");
+        var guid = $(this).attr("data-guid");
+        console.log ("url");
+        var url = im.getPublicURL(guid);
+        console.log(guid);
+        console.log(url);
+        window.open(url);
+    });
+
 	$("#groupingItems").sortable({
 		// placeholder: "drop-placeholder",
 		stop: function() {

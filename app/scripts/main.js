@@ -84,7 +84,8 @@ var
 	associations,
 	dropboxClientCredentials,
 	selectedAssociation,
-	dropboxClient;
+	dropboxClient,
+    gapi;
 
 dropboxClientCredentials = {
 	key: config.key,
@@ -104,44 +105,44 @@ function getClient() {
 }
 
 // Constructs the root ItemMirror object from the root of the Dropbox.
-function constructIMObject(pathURI, store) {
+function constructIMObject() {
     // Creates utilities depending on what store you're using
-    console.log(store);
-    if(store == "dropbox") {
-    	xooMLUtility = {
-    		fragmentURI: '/XooML2.xml',
-    		driverURI: 'DropboxXooMLUtility',
-    		dropboxClient: dropboxClient
-    	};
-    	itemUtility = {
-    		driverURI: 'DropboxItemUtility',
-    		dropboxClient: dropboxClient
-    	};
-    } else {
-        xooMLUtility = {
-            clientInterface: gapi
-        };
-        itemUtility = {
-            clientInterface: gapi
-        };
-    };
-	mirrorSyncUtility = {
-		utilityURI: 'MirrorSyncUtility'
-	};
-	var options = {
-		groupingItemURI: pathURI,
-		xooMLDriver: xooMLUtility,
-		itemDriver: itemUtility,
-		syncDriver: mirrorSyncUtility
-	};
-	im = new ItemMirror(options, function(error, newMirror) {
+ //    console.log(store);
+ //    if(store == "dropbox") {
+ //    	xooMLUtility = {
+ //    		fragmentURI: '/XooML2.xml',
+ //    		driverURI: 'DropboxXooMLUtility',
+ //    		dropboxClient: dropboxClient
+ //    	};
+ //    	itemUtility = {
+ //    		driverURI: 'DropboxItemUtility',
+ //    		dropboxClient: dropboxClient
+ //    	};
+ //    } else {
+ //        xooMLUtility = {
+ //            clientInterface: gapi
+ //        };
+ //        itemUtility = {
+ //            clientInterface: gapi
+ //        };
+ //    };
+	// mirrorSyncUtility = {
+	// 	utilityURI: 'MirrorSyncUtility'
+	// };
+	// var options = {
+	// 	groupingItemURI: pathURI,
+	// 	xooMLDriver: xooMLUtility,
+	// 	itemDriver: itemUtility,
+	// 	syncDriver: mirrorSyncUtility
+	// };
+	im = new ItemMirror("Thisisastring", function(error, newMirror) {
 		if(error) {
 			console.log(error);
 		} else {
 
-            if(pathURI == "/") {
-                handleLastNavigated(newMirror);
-            } 
+            // if(pathURI == "/") {
+            //     handleLastNavigated(newMirror);
+            // } 
 
             im = newMirror;
             refreshIMDisplay();
@@ -169,7 +170,7 @@ function connectDrive() {
     authenticated.then(function() {
         console.log('Successful Authentication!');
         authenticatedClient = gapi.client;
-        constructIMObject(lastVisited, store);
+        constructIMObject();
     }).fail(function(error) {
         alert('Uh oh, couldn\'nt autherticate. Check the console for details');
         console.log(error);
@@ -259,15 +260,15 @@ function refreshIMDisplay() {
 	}
 
     // Save the rootMirror lastvisited fragment
-    rootMirror.setFragmentNamespaceAttribute('lastVisited', im.getURIforItemDescribed(), 'folder-docs');
-    console.log("after set: " + rootMirror.getFragmentNamespaceAttribute('lastVisited', 'folder-docs'));
-    rootMirror.save(function(error) {
-        if(error) {
-            console.log('Save Error: ' + error);
-        } else {
-            console.log('Successfully saved.');
-        }
-    });
+    //rootMirror.setFragmentNamespaceAttribute('lastVisited', im.getURIforItemDescribed(), 'folder-docs');
+    //console.log("after set: " + rootMirror.getFragmentNamespaceAttribute('lastVisited', 'folder-docs'));
+    // rootMirror.save(function(error) {
+    //     if(error) {
+    //         console.log('Save Error: ' + error);
+    //     } else {
+    //         console.log('Successfully saved.');
+    //     }
+    // });
 
 	var entryDisplayName;
 	$("#groupingItems").empty();

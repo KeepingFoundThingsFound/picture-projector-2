@@ -194,10 +194,9 @@ function refreshIMDisplay() {
 	var entryDisplayName;
 	$("#groupingItems").empty();
 	$("#nonGroupingItems").empty();
-	$("#toolbar").empty();
 
 	// Creates the previous/back button
-	$("#toolbar").append(printToolbar());
+	printToolbar();
 
 	associations = im.listAssociations();
 	var length = associations.length;
@@ -326,6 +325,7 @@ function handleDisplaytextClicks() {
 		 });
 	}
 
+// Selects an itemMirror associaton 
 function selectAssociation(element) {
 	if(selectedAssociation) {
 		selectedAssociation.removeClass('selected-association');
@@ -424,16 +424,23 @@ function printToolbar() {
 	var previous = im.getCreator();
 
 	// Print the fragment name
-	result += "<h3 class='folder-name'>" + im.getDisplayName() + "</h3>";
+	var displayText = "<h3 class='folder-name'>" + im.getDisplayName() + "</h3>";
+    $("#toolbar h3").html(displayText);
 
-    result += "<button type='button' class='btn btn-primary' id='root-link'>" 
+    $('#button-toolbar').empty();
+
+    // Prints the home/root button
+    var homeButton = "<button type='button' class='btn btn-default' id='root-link'>" 
         + "<span class='glyphicon glyphicon glyphicon-home'></span> Home</button>";
+
+    $('#button-toolbar').append(homeButton);
+
 	// Print the previous link if we have one
 	if(previous) {
-		result += "<button type='button' class='btn btn-primary' id='previous-link'>"
+		var previousButton = "<button type='button' class='btn btn-default' id='previous-link'>"
 		+ "<span class='glyphicon glyphicon glyphicon-level-up'></span> Back</button>";
+        $('#button-toolbar').append(previousButton);
 	}
-
 
 	return result;
 }

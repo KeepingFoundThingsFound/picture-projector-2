@@ -249,12 +249,8 @@ function createClickHandlers() {
     });
 
     $('.glyphicon-file').on('click', function(e) {
-        console.log("guid");
-        var guid = $(this).attr("data-guid");
-        console.log ("url");
+        var guid = $(this).parent().parent().attr("data-guid");
         var url = im.getPublicURL(guid);
-        console.log(guid);
-        console.log(url);
         window.open(url);
     });
 

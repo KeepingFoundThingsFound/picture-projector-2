@@ -3,7 +3,7 @@ h1 {
 	text-align: center;
 }
 
-span.association-grouping {
+span.association-grouping, span.association-file {
 	cursor: pointer;
 }
 

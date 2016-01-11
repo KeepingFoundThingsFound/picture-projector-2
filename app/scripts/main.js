@@ -9,6 +9,7 @@
 
 $(document).ready(function() {
 	$("#dboxButton").on("click", connectDropbox);
+    $("#gdriveButton").on("click", connectDrive);
 	//initialize context menu
 	$.contextMenu({
             selector: '.context-menu-one', 
@@ -77,6 +78,7 @@ $(document).ready(function() {
 
 var
 	im,
+    store,
     rootMirror,
 	previous,
 	associations,
@@ -102,23 +104,34 @@ function getClient() {
 }
 
 // Constructs the root ItemMirror object from the root of the Dropbox.
-function constructIMObject(pathURI) {
-	dropboxXooMLUtility = {
-		fragmentURI: '/XooML2.xml',
-		driverURI: 'DropboxXooMLUtility',
-		dropboxClient: dropboxClient
-	};
-	dropboxItemUtility = {
-		driverURI: 'DropboxItemUtility',
-		dropboxClient: dropboxClient
-	};
+function constructIMObject(pathURI, store) {
+    // Creates utilities depending on what store you're using
+    console.log(store);
+    if(store == "dropbox") {
+    	xooMLUtility = {
+    		fragmentURI: '/XooML2.xml',
+    		driverURI: 'DropboxXooMLUtility',
+    		dropboxClient: dropboxClient
+    	};
+    	itemUtility = {
+    		driverURI: 'DropboxItemUtility',
+    		dropboxClient: dropboxClient
+    	};
+    } else {
+        xooMLUtility = {
+            clientInterface: gapi
+        };
+        itemUtility = {
+            clientInterface: gapi
+        };
+    };
 	mirrorSyncUtility = {
 		utilityURI: 'MirrorSyncUtility'
 	};
 	var options = {
 		groupingItemURI: pathURI,
-		xooMLDriver: dropboxXooMLUtility,
-		itemDriver: dropboxItemUtility,
+		xooMLDriver: xooMLUtility,
+		itemDriver: itemUtility,
 		syncDriver: mirrorSyncUtility
 	};
 	im = new ItemMirror(options, function(error, newMirror) {
@@ -144,12 +157,77 @@ function handleLastNavigated(newMirror) {
     console.log("lastVisited: " + lastVisited);
 
     if(lastVisited && lastVisited != "/") {
-        constructIMObject(lastVisited);
+        constructIMObject(lastVisited, store);
     } 
+}
+
+// Directs the client to Google Drive's authentication page to sign in.
+function connectDrive() {
+    store = "gDrive";
+    var authenticated = authorizeDrive();
+ 
+    authenticated.then(function() {
+        console.log('Successful Authentication!');
+        authenticatedClient = gapi.client;
+        constructIMObject(lastVisited, store);
+    }).fail(function(error) {
+        alert('Uh oh, couldn\'nt autherticate. Check the console for details');
+        console.log(error);
+    });
+}
+
+// This function returns a promise that handles our authentication
+function authorizeDrive() {
+  // Your Client ID can be retrieved from your project in the Google
+  // Developer Console, https://console.developers.google.com
+  var CLIENT_ID = '681676105907-omec1itmltlnknrdfo150qcn7pdt95ri.apps.googleusercontent.com';
+  var auth = $.Deferred();
+  // Need full permissions for everything to work. This is the easiest option
+  var SCOPES = ['https://www.googleapis.com/auth/drive'];
+ 
+  checkAuth();
+ 
+  function checkAuth() {
+    // Load the newer version of the API, the old version is a pain to deal with
+    gapi.load('auth2', function() {
+        gapi.auth2.init({
+        'client_id': CLIENT_ID,
+        'scope': SCOPES.join(' '),
+        'immediate': true
+        });
+ 
+        var googAuth = gapi.auth2.getAuthInstance();
+ 
+        if (googAuth.isSignedIn.get()) {
+            loadDriveAPI();
+        } else {
+            // Need to have them sign in
+            googAuth.signIn().then(function() {
+                loadDriveAPI();
+            }, function(error) {
+                // Failed to authenticate for some reason
+                auth.reject(error);
+            });
+        }
+    });
+  }
+ 
+  // Loads the drive API, and resolves the promise
+  function loadDriveAPI() {
+    gapi.client.load('drive', 'v2', function() {
+        // Once this callback is executed, that means we've authorized just as expected
+        // and can therefore resolve the promise
+        auth.resolve();
+    });
+  }
+ 
+  // Returns the promise object from our deferred object
+  return auth.promise();
 }
 
 // Directs the client to Dropbox's authentication page to sign in.
 function connectDropbox() {
+    store = "dropbox";
 	if(authenticatedClient) {
 		console.log('Dropbox authenticated');
 	} else {
@@ -160,7 +238,7 @@ function connectDropbox() {
 			} else {
 				authenticatedClient = client;
 				console.log('Dropbox authenticated');
-				constructIMObject("/");
+				constructIMObject("/", store);
 			}
 		});
 	}

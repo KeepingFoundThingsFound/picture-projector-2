@@ -77,6 +77,7 @@ $(document).ready(function() {
 
 var
 	im,
+    rootMirror,
 	previous,
 	associations,
 	dropboxClientCredentials,
@@ -101,7 +102,7 @@ function getClient() {
 }
 
 // Constructs the root ItemMirror object from the root of the Dropbox.
-function constructIMObject() {
+function constructIMObject(pathURI) {
 	dropboxXooMLUtility = {
 		fragmentURI: '/XooML2.xml',
 		driverURI: 'DropboxXooMLUtility',
@@ -115,7 +116,7 @@ function constructIMObject() {
 		utilityURI: 'MirrorSyncUtility'
 	};
 	var options = {
-		groupingItemURI: "/",
+		groupingItemURI: pathURI,
 		xooMLDriver: dropboxXooMLUtility,
 		itemDriver: dropboxItemUtility,
 		syncDriver: mirrorSyncUtility
@@ -124,11 +125,27 @@ function constructIMObject() {
 		if(error) {
 			console.log(error);
 		} else {
-			im = newMirror
-			console.log(im);
-			refreshIMDisplay();
+
+            if(pathURI == "/") {
+                handleLastNavigated(newMirror);
+            } 
+
+            im = newMirror;
+            refreshIMDisplay();
 		}
 	});
+}
+
+// Called upon the successful (re)authentication of a user. 
+function handleLastNavigated(newMirror) {
+    rootMirror = newMirror;
+
+    var lastVisited = im.getFragmentNamespaceAttribute('lastVisited', 'folder-docs');
+    console.log("lastVisited: " + lastVisited);
+
+    if(lastVisited && lastVisited != "/") {
+        constructIMObject(lastVisited);
+    } 
 }
 
 // Directs the client to Dropbox's authentication page to sign in.
@@ -143,7 +160,7 @@ function connectDropbox() {
 			} else {
 				authenticatedClient = client;
 				console.log('Dropbox authenticated');
-				constructIMObject();
+				constructIMObject("/");
 			}
 		});
 	}
@@ -162,6 +179,17 @@ function refreshIMDisplay() {
 	if(getClient()) {
 		$(".jumbotron").hide();
 	}
+
+    // Save the rootMirror lastvisited fragment
+    rootMirror.setFragmentNamespaceAttribute('lastVisited', im.getURIforItemDescribed(), 'folder-docs');
+    console.log("after set: " + rootMirror.getFragmentNamespaceAttribute('lastVisited', 'folder-docs'));
+    rootMirror.save(function(error) {
+        if(error) {
+            console.log('Save Error: ' + error);
+        } else {
+            console.log('Successfully saved.');
+        }
+    });
 
 	var entryDisplayName;
 	$("#groupingItems").empty();
@@ -216,7 +244,6 @@ function printAssociations(associationList, div) {
 		var appendingObject = associationMarkup(associationList[i]);
 		div.append(appendingObject);
 		$("#" + associationList[i]).data("originalDisplayText", originalDisplayText);
-		console.log($("#" + associationList[i]).data("originalDisplayText"));
 	}
 }
 
@@ -262,6 +289,8 @@ function createClickHandlers() {
 	});
 
 	$("#previous-link").on("click", navigatePrevious);
+
+    $("#root-link").on("click", navigateRoot);
 }
 
 // Handles the logic and timing of the single vs double clicks on
@@ -269,16 +298,6 @@ function createClickHandlers() {
 // to enter edit mode upon another single click, double clicks navigate
 // to that itemmirror object
 function handleDisplaytextClicks() {
-	// $('.association-row').on('click', function() {
-	// 	var element = $(this);
-	// 	selectAssociation(element);
-	// });
-	//
-	// $('.association-row').on('dblclick', function() {
-	// 	var element = $(this);
-	// 	var guid = element.attr('data-guid');
-	// 	navigateMirror(guid);
-	// });
 	var DELAY = 350, clicks = 0, timer = null;
 	$('.association-row').on("click", function(e) {
 		clicks++;  // count clicks
@@ -353,6 +372,7 @@ function saveMirror() {
 			console.log('Successfully saved.');
 		}
 	});
+
 }
 
 // Refreshes the itemMirror object
@@ -371,11 +391,32 @@ function navigateMirror(guid) {
 
 		if(!error) {
 			im = newMirror;
-			refreshIMDisplay();
+            refreshIMDisplay();
 		}
 	});
 
 }
+
+// Navigates and refreshes the display to the previous mirror
+function navigatePrevious() {
+    var previous = im.getCreator();
+
+    if(previous) {
+        im = previous;
+        refreshIMDisplay();
+    }
+}
+
+
+// Navigates to the root mirror
+function navigateRoot() {
+    if(rootMirror) {
+        im = rootMirror;
+        refreshIMDisplay();
+    }
+
+}
+
 
 // Prints the previous link to go back up to parent/creator
 function printToolbar() {
@@ -385,24 +426,18 @@ function printToolbar() {
 	// Print the fragment name
 	result += "<h3 class='folder-name'>" + im.getDisplayName() + "</h3>";
 
+    result += "<button type='button' class='btn btn-primary' id='root-link'>" 
+        + "<span class='glyphicon glyphicon glyphicon-home'></span> Home</button>";
 	// Print the previous link if we have one
 	if(previous) {
 		result += "<button type='button' class='btn btn-primary' id='previous-link'>"
 		+ "<span class='glyphicon glyphicon glyphicon-level-up'></span> Back</button>";
 	}
 
+
 	return result;
 }
 
-// Navigates and refreshes the display to the previous mirror
-function navigatePrevious() {
-	var previous = im.getCreator();
-
-	if(previous) {
-		im = previous;
-		refreshIMDisplay();
-	}
-}
 
 // Attempts to save the order of the associations by matching
 // each associations guid with the array of guids returned on a reordering drop.

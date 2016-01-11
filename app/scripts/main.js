@@ -65,7 +65,11 @@ $(document).ready(function() {
                 "sep1": "----------",
                 "openInCloud": {
                 	name: "Open in Cloud Store",
-                	disabled: true
+                	callback: function(e) {
+                        var elementGUID = $(this).attr("data-guid");
+                        var url = im.getPublicURL(elementGUID);
+                        window.open(url);
+                    }
                 }
             }
         });

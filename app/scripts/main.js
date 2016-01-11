@@ -37,7 +37,7 @@ $(document).ready(function() {
                 	disabled: true
                 },
                 "moveUp": {
-                	name: "Move Assocition Up",
+                	name: "Move Association Up",
                 	callback: function(e) {
                 		var element = $(this);
                 		element.prev().before(element);
@@ -79,6 +79,8 @@ var
 	im,
     rootMirror,
 	previous,
+    mirrorList = [],
+    breadcrumbs,
 	associations,
 	dropboxClientCredentials,
 	selectedAssociation,
@@ -128,6 +130,7 @@ function constructIMObject(pathURI) {
 
             if(pathURI == "/") {
                 handleLastNavigated(newMirror);
+                initBreadcrumbs();
             } 
 
             im = newMirror;
@@ -141,7 +144,6 @@ function handleLastNavigated(newMirror) {
     rootMirror = newMirror;
 
     var lastVisited = im.getFragmentNamespaceAttribute('lastVisited', 'folder-docs');
-    console.log("lastVisited: " + lastVisited);
 
     if(lastVisited && lastVisited != "/") {
         constructIMObject(lastVisited);
@@ -185,9 +187,9 @@ function refreshIMDisplay() {
     console.log("after set: " + rootMirror.getFragmentNamespaceAttribute('lastVisited', 'folder-docs'));
     rootMirror.save(function(error) {
         if(error) {
-            console.log('Save Error: ' + error);
+            console.log('RootMirror Save Error: ' + error);
         } else {
-            console.log('Successfully saved.');
+            console.log('Successfully saved rootMirror.');
         }
     });
 
@@ -307,14 +309,14 @@ function handleDisplaytextClicks() {
 		if(clicks === 1) {
 			timer = setTimeout(function() {
 				// Single click case
-				clicks = 0; // reset counter
+				clicks = 0; 
 				// If element has been selected already, open edit box
 				if(alreadySelected) { editboxAssociation(element); }
 			}, DELAY);
 		// If element is a grouping item
 		} else if(im.isAssociationAssociatedItemGrouping(element.attr('data-guid'))) {
 			// Double click case
-			clearTimeout(timer);    //prevent single-click action
+			clearTimeout(timer);    // override single-click action
 			var element = $(this);
 			var guid = element.attr('data-guid');
 			navigateMirror(guid);
@@ -385,16 +387,32 @@ function refreshMirror() {
 }
 
 // Attempts to navigate and display a new itemMirror association
+// If we've already visited a specific mirror, just reloads it,
+// if not we create a new ItemMirror for that association
 function navigateMirror(guid) {
-	im.createItemMirrorForAssociatedGroupingItem(guid, function(error, newMirror) {
-		console.log(error);
-
-		if(!error) {
-			im = newMirror;
+    var hasVisited = false;
+    for(var key in mirrorList) {
+        if(key == guid) {
+            im = mirrorList[key];
+            hasVisited = true;
             refreshIMDisplay();
-		}
-	});
+            break;
+        }
+    }
 
+    if(!hasVisited) {
+        im.createItemMirrorForAssociatedGroupingItem(guid, function(error, newMirror) {
+            console.log(error);
+            if(!error) {
+                im = newMirror;
+                mirrorList[guid] = newMirror;
+                refreshIMDisplay();
+            }
+        });
+    }
+
+    breadcrumbs.push(guid);
+    
 }
 
 // Navigates and refreshes the display to the previous mirror
@@ -403,6 +421,7 @@ function navigatePrevious() {
 
     if(previous) {
         im = previous;
+        breadcrumbs.pop();
         refreshIMDisplay();
     }
 }
@@ -412,17 +431,21 @@ function navigatePrevious() {
 function navigateRoot() {
     if(rootMirror) {
         im = rootMirror;
+        // reset the breadcrumbs because we're going back to root
+        initBreadcrumbs();
         refreshIMDisplay();
     }
 
 }
 
+function initBreadcrumbs() {
+    breadcrumbs = [];
+    breadcrumbs.push("root");
+}
+
 
 // Prints the previous link to go back up to parent/creator
 function printToolbar() {
-	var result = "";
-	var previous = im.getCreator();
-
 	// Print the fragment name
 	var displayText = "<h3 class='folder-name'>" + im.getDisplayName() + "</h3>";
     $("#toolbar h3").html(displayText);
@@ -436,13 +459,17 @@ function printToolbar() {
     $('#button-toolbar').append(homeButton);
 
 	// Print the previous link if we have one
+    var previous = im.getCreator();
 	if(previous) {
 		var previousButton = "<button type='button' class='btn btn-default' id='previous-link'>"
 		+ "<span class='glyphicon glyphicon glyphicon-level-up'></span> Back</button>";
         $('#button-toolbar').append(previousButton);
 	}
 
-	return result;
+    $('#breadcrumbs').empty();
+    for(var i = 0; i < breadcrumbs.length; i++) {
+        $('#breadcrumbs').append(breadcrumbs[i]);
+    }
 }
 
 

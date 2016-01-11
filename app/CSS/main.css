@@ -46,7 +46,12 @@ h3.folder-name {
 }
 
 #toolbar {
-	margin-bottom: 20px
+	margin-bottom: 20px;
+	border-bottom: 1px solid #C0C0C0;
+}
+
+#breadcrumbs {
+	text-align: center;
 }
 
 .container {

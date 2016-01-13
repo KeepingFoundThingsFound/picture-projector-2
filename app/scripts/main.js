@@ -105,7 +105,7 @@ function getClient() {
 }
 
 // Constructs the root ItemMirror object from the root of the Dropbox.
-function constructIMObject() {
+function constructIMObject(store) {
     // Creates utilities depending on what store you're using
  //    console.log(store);
  //    if(store == "dropbox") {
@@ -140,12 +140,22 @@ function constructIMObject() {
 			console.log(error);
 		} else {
 
+			im = newMirror;
             // if(pathURI == "/") {
             //     handleLastNavigated(newMirror);
-            // } 
-
-            im = newMirror;
-            refreshIMDisplay();
+            // }
+            // Check to see which of the returned items is the correct store, and navigate into that mirror
+            if(store) {
+            	associations = im.listAssociations();
+            	for(var i =0; i < associations.length; i++) {
+            		var displayText = im.getAssociationDisplayText(associations[i]);
+            		if(displayText == store) {
+            			navigateMirror(associations[i]);
+            		}
+            	}
+            } else {
+            	refreshIMDisplay();
+            }
 		}
 	});
 }
@@ -164,13 +174,13 @@ function handleLastNavigated(newMirror) {
 
 // Directs the client to Google Drive's authentication page to sign in.
 function connectDrive() {
-    store = "gDrive";
+    store = "Google Drive";
     var authenticated = authorizeDrive();
  
     authenticated.then(function() {
         console.log('Successful Authentication!');
         authenticatedClient = gapi.client;
-        constructIMObject();
+        constructIMObject(store);
     }).fail(function(error) {
         alert('Uh oh, couldn\'nt autherticate. Check the console for details');
         console.log(error);
@@ -228,7 +238,7 @@ function authorizeDrive() {
 
 // Directs the client to Dropbox's authentication page to sign in.
 function connectDropbox() {
-    store = "dropbox";
+    store = "Dropbox";
 	if(authenticatedClient) {
 		console.log('Dropbox authenticated');
 	} else {
@@ -239,7 +249,7 @@ function connectDropbox() {
 			} else {
 				authenticatedClient = client;
 				console.log('Dropbox authenticated');
-				constructIMObject("/", store);
+				constructIMObject(store);
 			}
 		});
 	}
@@ -466,11 +476,12 @@ function refreshMirror() {
 // Attempts to navigate and display a new itemMirror association
 function navigateMirror(guid) {
 	im.createItemMirrorForAssociatedGroupingItem(guid, function(error, newMirror) {
-		console.log(error);
 
 		if(!error) {
 			im = newMirror;
             refreshIMDisplay();
+		} else {
+			console.log(error);
 		}
 	});
 

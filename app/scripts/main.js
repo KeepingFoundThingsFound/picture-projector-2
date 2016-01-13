@@ -15,62 +15,20 @@ $(document).ready(function() {
             selector: '.context-menu-one', 
             items: {
                 "edit": {
-                	name: "Edit DisplayText",
+                	name: "Choose custom URL",
                 	callback: function(e) {
                 		var element = $(this);
-                		selectAssociation(element);
-                		editboxAssociation(element);
+                		var guid = element.attr('data-guid');
+                		console.log(guid);
+                		var url = prompt("Please enter the url of the image you'd like as this item's background", "http://example.com/yourphoto.png");
+                		console.log(url);
+                		im.setAssociationNamespaceAttribute('picture', url, guid, 'picture-projector');
+                		element.css({
+                			'background-image': 'url(' + url + ')',
+                			'background-size' : 'cover'
+                		});
+                		saveMirror();
                 	}
-                },
-                "open": {
-                	name: "Open Subfolder",
-                	callback: function(e) {
-                		var elementGUID = $(this).attr('data-guid');
-                		if(im.isAssociationAssociatedItemGrouping(elementGUID)) {
-                			navigateMirror(elementGUID);
-                		}
-                	},
-                	// Disabled if the element is a non-grouping item
-                	disabled: function() {return !im.isAssociationAssociatedItemGrouping($(this).attr('data-guid')); }
-                },
-                "copy" : {
-                	name: "Copy",
-                	disabled: true
-                },
-                "moveUp": {
-                	name: "Move Assocition Up",
-                	callback: function(e) {
-                		var element = $(this);
-                		element.prev().before(element);
-                		saveOrder();
-                	},
-                	// Disabled if there is no element before it in the list or if it is a non-grouping item
-                	disabled: function() {return (!$(this).prev()[0] || 
-                		!im.isAssociationAssociatedItemGrouping($(this).attr('data-guid'))); }
-                },
-                "moveDown": {
-                	name: "Move Association Down",
-                	callback: function(e) {
-                		var element = $(this);
-                		element.next().after(element);
-                		saveOrder();
-                	},
-                	// Disabled if there is no element after it in the list or if it is a non-grouping item
-                	disabled: function() {return (!$(this).next()[0] || 
-                		!im.isAssociationAssociatedItemGrouping($(this).attr('data-guid'))); }
-                },
-                "delete": {
-                	name: "Delete",
-                	disabled: true
-                },
-                "sep1": "----------",
-                "openInCloud": {
-                	name: "Open in Cloud Store",
-                	callback: function(e) {
-                        var elementGUID = $(this).attr("data-guid");
-                        var url = im.getPublicURL(elementGUID);
-                        window.open(url);
-                    }
                 }
             }
         });
@@ -87,6 +45,13 @@ var
 	dropboxClient,
     gapi;
 
+// Start Added variables from PP
+
+// Variable to store the highest zIndex association
+var highestZIndex = 0;
+
+// End
+
 dropboxClientCredentials = {
 	key: config.key,
 	secret: config.secret
@@ -95,7 +60,8 @@ dropboxClientCredentials = {
 dropboxClient = new Dropbox.Client(dropboxClientCredentials);
 
 dropboxClient.authDriver(new Dropbox.AuthDriver.Popup({
-	receiverUrl: "http://localhost:9000/app/misc/oauth_reciever.html"
+	// receiverUrl: "http://localhost:9000/app/misc/oauth_reciever.html";
+	receiverUrl: "https://picture-projector-2.thepvongsa.c9users.io:8081/app/misc/oauth_reciever.html"
 }));
 
 var authenticatedClient = null;
@@ -191,7 +157,7 @@ function connectDrive() {
 function authorizeDrive() {
   // Your Client ID can be retrieved from your project in the Google
   // Developer Console, https://console.developers.google.com
-  var CLIENT_ID = '681676105907-omec1itmltlnknrdfo150qcn7pdt95ri.apps.googleusercontent.com';
+  var CLIENT_ID = '514195168626-87vskuddd1pvg5bf4erhigsp9rtp95nk.apps.googleusercontent.com';
   var auth = $.Deferred();
   // Need full permissions for everything to work. This is the easiest option
   var SCOPES = ['https://www.googleapis.com/auth/drive'];
@@ -267,6 +233,8 @@ function refreshIMDisplay() {
 	// Hides the jumbotron if we are already connected to Dropbox
 	if(getClient()) {
 		$(".jumbotron").hide();
+		$(".panel").show();
+		$(".clear").show();
 	}
 
     // Save the rootMirror lastvisited fragment
@@ -302,7 +270,7 @@ function refreshIMDisplay() {
 	}
 
 	// Prints out items in alphabetical order
-	printAssociations(orderAssociations(groupingItems), $("#groupingItems"));
+	printAssociations(orderAssociations(groupingItems), $("#canvas"));
 	printAssociations(nonGroupingItems.sort(), $("#nonGroupingItems"));
 
 	createClickHandlers();
@@ -336,121 +304,24 @@ function printAssociations(associationList, div) {
 }
 
 // Creates the JS click handlers for the various associations and links
-// Also creates the handlers for the textbox editing of associations
 function createClickHandlers() {
-	handleDisplaytextClicks();
-
-	$('.assoc-textbox').on('blur', function() {
-		var element = $(this);
-		textboxHandler(element);
-    });
-
-	$('.assoc-textbox').keypress(function (e) {
-		if(e.which == 13) {
-			var element = $(this);
-			textboxHandler(element);
-		}
-	});
-
-	$('.assoc-textbox').live('keyup', function(e) {
-		var guid = $(this).attr('id');
-		var newText = $(this).val();
-		$("div[data-guid='" + guid + "'] .assoc-displaytext").html(marked(newText));
-	});
-
-    $('.glyphicon-folder-open').on('click', function(e) {
-        var guid = $(this).attr("data-guid");
-        navigateMirror(guid);
-    });
-
-    $('.glyphicon-file').on('click', function(e) {
-        var guid = $(this).parent().parent().attr("data-guid");
-        var url = im.getPublicURL(guid);
-        window.open(url);
-    });
-
-	$("#groupingItems").sortable({
-		// placeholder: "drop-placeholder",
-		stop: function() {
-			saveOrder();
-		}
-	});
-
 	$("#previous-link").on("click", navigatePrevious);
 
-    $("#root-link").on("click", navigateRoot);
+    $("#root-link").on("click", function(e) {
+    	location.reload();
+    });
+    
+    $('.association').on("mousedown", function(e) {
+    	var guid = $(this).attr('data-guid');
+    	selectAssociation(guid);
+    });
 }
 
-// Handles the logic and timing of the single vs double clicks on
-// display text. Single clicks select the association in preperation
-// to enter edit mode upon another single click, double clicks navigate
-// to that itemmirror object
-function handleDisplaytextClicks() {
-	var DELAY = 350, clicks = 0, timer = null;
-	$('.association-row').on("click", function(e) {
-		clicks++;  // count clicks
-		var element = $(this);
-		// Check if the element has been selected already
-		var alreadySelected = element.hasClass('selected-association');
-		selectAssociation(element);
-		if(clicks === 1) {
-			timer = setTimeout(function() {
-				// Single click case
-				clicks = 0; // reset counter
-				// If element has been selected already, open edit box
-				if(alreadySelected) { editboxAssociation(element); }
-			}, DELAY);
-		// If element is a grouping item
-		} else if(im.isAssociationAssociatedItemGrouping(element.attr('data-guid'))) {
-			// Double click case
-			clearTimeout(timer);    //prevent single-click action
-			var element = $(this);
-			var guid = element.attr('data-guid');
-			navigateMirror(guid);
-			clicks = 0; // reset counter
-		 }})
-		 .on("dblclick", function(e){
-			 e.preventDefault();  // prevent default dblclick event
-		 });
-	}
-
-// Selects an itemMirror associaton 
-function selectAssociation(element) {
-	if(selectedAssociation) {
-		selectedAssociation.removeClass('selected-association');
-	}
-	element.addClass('selected-association');
-	selectedAssociation = element;
+// Selects an itemMirror associaton for further editing
+function selectAssociation(guid) {
+	selectedAssociation = new association(guid);
 }
 
-// Takes in the row element of the clicked association, selects it
-// by saving the guid as the currently selected guid and highlights
-// the association in view by placing a border around it.
-function editboxAssociation(element) {
-	if(element.hasClass('selected-association')) {
-		// The clicked element is the currently selected element, let's
-		// toggle into edit
-		var guid = element.attr('data-guid');
-		var textbox = $('#' + guid);
-		$("h4[data-guid='" + guid + "']").show();
-		textbox.show();
-		textbox.putCursorAtEnd();
-	}
-}
-
-
-// Handles the showing/hiding/saving functionality of the edit textareas
-function textboxHandler(element) {
-	var guid = element.attr('id');
-	var newText = element.val();
-	$("div[data-guid='" + guid + "'] .assoc-displaytext").html(marked(newText)).show();
-
-	// Hides the "live preview" header
-	$("h4[data-guid='" + guid + "']").hide();
-	im.setAssociationDisplayText(guid, newText);
-	saveMirror();
-  element.hide();
-}
 
 // Saves the current itemMirror object
 function saveMirror() {
@@ -473,7 +344,7 @@ function refreshMirror() {
 	});
 }
 
-// Attempts to navigate and display a new itemMirror association
+// Attempts to  and display a new itemMirror association
 function navigateMirror(guid) {
 	im.createItemMirrorForAssociatedGroupingItem(guid, function(error, newMirror) {
 
@@ -555,58 +426,160 @@ function saveOrder() {
 	saveMirror();
 }
 
+// Abstraction of a picture projector itemMirror association. Includes
+// namespace attributes dealing with the positioning and display of an association.
+function association(guid) {
+	this.guid = guid;
+	this.displayText = im.getAssociationDisplayText(guid);
+	this.picture = im.getAssociationNamespaceAttribute('picture', guid, 'picture-projector');
+	this.zIndex = im.getAssociationNamespaceAttribute('zIndex', guid, 'picture-projector');
+	this.yCord = im.getAssociationNamespaceAttribute('yCord', guid, 'picture-projector');
+	this.xCord = im.getAssociationNamespaceAttribute('xCord', guid, 'picture-projector');
+}
+
+// Sets an association in itemMirror to equal an abstracted association
+
+function setAssociation(assoc) {
+	var guid = assoc.guid;
+	console.log(guid);
+	console.log(assoc.xCord);
+	console.log(assoc.yCord);
+	im.setAssociationNamespaceAttribute('zIndex', assoc.zIndex, guid, 'picture-projector');
+	im.setAssociationNamespaceAttribute('yCord', assoc.yCord, guid, 'picture-projector');
+	im.setAssociationNamespaceAttribute('xCord', assoc.xCord, guid, 'picture-projector');
+}
+
 // Returns the markup for an association to be printed to the screen
 // Differentiates between a groupingItem and nonGroupinItem via icon
 function associationMarkup(guid) {
-	var originalDisplayText = im.getAssociationDisplayText(guid);
-	var displayTextWithMarkdown = marked(originalDisplayText);
-	var functionCall = "navigateMirror(" + guid + ")";
-	var markup = "<div data-guid='" + guid + "' class='row association-row context-menu-one'>" +
-	"<div class='col-xs-11'><textarea class='assoc-textbox form-control' rows='5' id='" + guid + "' style='display:none;'>" + originalDisplayText
-	+ "</textarea><h4 style='display:none;' data-guid='" + guid + "'>Live preview:</h4>" +
+	var assoc = new association(guid);
+	
+	var markup = "<div id='" + assoc.displayText + "' data-guid='" + guid + "' class='folder draggable panel-default position-fixed association context-menu-one' style='" + handleAssocStyle(assoc) + "'>";
+	markup += "<p>" + assoc.displayText.substring(0, 11) + "</p>";
+	markup += "</div>";
+	
+	
 
-	// Display text area
-	"<div data-guid='" + guid + "' class='assoc-displaytext'>" + displayTextWithMarkdown + "</div></div>" +
-	"<div class='col-xs-1'>";
+	// 	<div id={{showDisplayText(assoc)}} ng-repeat="assoc in groupingItems" repeat-end="repeatEnd()" back-img="{{assoc.customPicture}}" data-displayName="{{assoc.displayName}}" data-guid="{{assoc.guid}}" data-toggle="tooltip" title="{{assoc.displayText}}" context-menu data-target="menu-{{ $index }}" ng-mousedown="handleAssocSelect(assoc)" class="folder draggable panel-default position-fixed" ng-style="::handleAssocStyle(assoc)"><p data-guid="{{assoc.guid}}">
+	// 	{{showDisplayText(assoc)}}</p>
 
-	if(im.isAssociationAssociatedItemGrouping(guid)) {
-		markup += "<span data-guid='" + guid + "' class='association association-grouping glyphicon glyphicon-folder-open'></span></div>";
-	} else {
-		markup += "<span class='association association-file glyphicon glyphicon-file'></span></div>";
-	}
+	// 		<div class="dropdown" id="menu-{{ $index }}">
+	// 			<ul class="dropdown-menu" role="menu">
+	// 				<li class="set-background">
+	// 					<a class="pointer" role="menuitem" tabindex="1"
+	// 					ng-click="handleBackgroundEdit()"><span class="strong">Set Background</span></a>
+	// 				</li>
+	// 			</ul>
+	// 		</div>
+	// 	</div> 
 
+	// 	<div ng-click="handleClick(assoc)" ng-repeat="assoc in notGroupingItems" class="folder" style="background-image:url('images/file.gif')"><p>{{assoc.displayText | limitTo: 12}}</p></div>
 
+	// </div>
 	return markup;
 
 }
 
-jQuery.fn.putCursorAtEnd = function() {
+// Handles the placement styling of the different associations
+function handleAssocStyle(assoc) {
+	var result = "";
+	if(assoc.xCord || assoc.yCord) {
+		result += "left: " + assoc.xCord + "px;";
+		result += "top: " + assoc.yCord + "px;";
+		result += "z-index: " + assoc.zIndex + "px;";
+		result += "position: absolute;";
+		
+	} else {
+		result += "position: relative;"
+	}
 
-  return this.each(function() {
+	if(assoc.picture) {
+		result += "background-image: url(" + assoc.picture + ");";
+	} else {
+		result += "background-image: url(images/folder.png);";
+	}
 
-    $(this).focus()
+	return result;
+}
 
-    // If this function exists...
-    if (this.setSelectionRange) {
-      // ... then use it (Doesn't work in IE)
+// INTERACT.JS - draggable related code
+// target elements with the "draggable" class
+interact('.draggable')
+  .draggable({
+    // enable inertial throwing
+    inertia: false,
+    // keep the element within the area of it's parent
+    restrict: {
+      restriction: "parent",
+      endOnly: false,
+      elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+    },
 
-      // Double the length because Opera is inconsistent about whether a carriage return is one character or two. Sigh.
-      var len = $(this).val().length * 2;
 
-      this.setSelectionRange(len, len);
 
-    } else {
-    // ... otherwise replace the contents with itself
-    // (Doesn't work in Google Chrome)
+    // call this function on every dragmove event
+    onmove: dragMoveListener,
+    // call this function on every dragend event
+    onend: function (event) {
+      var rect = getOffsetRect(event.target);
+      //$scope.offsetLeft = 'Offset left: ' + rect.left;
+      //$scope.offsetTop = 'Offset top: ' + rect.top;
 
-      $(this).val($(this).val());
+      selectedAssociation.xCord = rect.left;
+      selectedAssociation.yCord = rect.top;
+      // selectedAssoc.zIndex = highestZIndex;
 
+      //$scope.selectedAssoc.moved = true;
+		setAssociation(selectedAssociation);
+      saveMirror();
     }
+  })
 
-    // Scroll to the bottom, in case we're in a tall textarea
-    // (Necessary for Firefox and Google Chrome)
-    this.scrollTop = 999999;
+	// Handles a click on the folder, navigates to the 
+	// folders guid, shows the loading spinner
+	.on('tap', function (event) {
+		var guid = event.target.getAttribute('data-guid');
+		if(event.button != 2) {
+		   	// navigateMirror(guid);
+		}
+	});
 
-  });
+function dragMoveListener (event) {
+	var target = event.target,
+    // keep the dragged position in the data-x/data-y attributes
+    x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+    y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy; 
+	// translate the element
+	target.style.webkitTransform =
+	target.style.transform =
+	  'translate(' + x + 'px, ' + y + 'px)';
+	
+	// // Bring the element to overlap other elements using zIndex if it's
+	// // not already the element with the highest z-index
+	// if(target.style.zIndex < highestZIndex) {
+	//   highestZIndex++;
+	//   target.style.zIndex = highestZIndex;
+	// }
+	
+	// update the position attributes
+	target.setAttribute('data-x', x);
+	target.setAttribute('data-y', y);
+}
 
-};
+// Gets the offset of the provided element relative to the canvas and current scroll
+function getOffsetRect(elem) {
+	var box = elem.getBoundingClientRect();
+	
+	var body = document.body;
+	var docElem = document.documentElement;
+	var canvasRect = document.getElementById('canvas').getBoundingClientRect();
+	
+	// Client scroll
+	var clientTop = docElem.clientTop || body.clientTop || 0;
+	var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+	
+	var top  =  box.top - clientTop - canvasRect.top;
+	var left = box.left - clientLeft - canvasRect.left;
+	
+	return { top: Math.round(top), left: Math.round(left) }
+}

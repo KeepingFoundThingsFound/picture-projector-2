@@ -53,9 +53,70 @@ h3.folder-name {
 	box-shadow: 0 0 10px #b3b3b3;
 	margin-bottom: 30px;
 	margin-top: 30px;
+	padding
 }
 
 .jumbotron {
 	margin-top: 30px;
 	text-align: center;
+}
+
+/**
+Drag and drop file explorer
+**/
+
+#canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 1080px;
+  min-height: 500px;
+  margin: auto;
+  padding: 0;
+  background: url("../images/white_bed_sheet.png") repeat;
+}
+
+.folder {
+  position: relative;
+  display: inline-block;
+  background-size: 100% 100%;
+  width: 100px;
+  height: 100px;
+  margin: 0;
+  padding: 0;
+  cursor: pointer; cursor: hand;
+}
+
+.folder p {
+  margin-top: 43px;
+  text-align: center;
+  color: #373D40;
+}
+
+.position-fixed {
+  position: fixed;
+}
+
+.panel-body {
+  width: 100px;
+  height: 100px;
+  background: black;
+}
+
+.set-background {
+  font-weight: bold;
+}
+
+.strong{ 
+  font-weight: bold;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.panel {
+	display:none;
 }

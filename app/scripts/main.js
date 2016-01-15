@@ -19,9 +19,7 @@ $(document).ready(function() {
                 	callback: function(e) {
                 		var element = $(this);
                 		var guid = element.attr('data-guid');
-                		console.log(guid);
                 		var url = prompt("Please enter the url of the image you'd like as this item's background", "http://example.com/yourphoto.png");
-                		console.log(url);
                 		im.setAssociationNamespaceAttribute('picture', url, guid, 'picture-projector');
                 		element.css({
                 			'background-image': 'url(' + url + ')',
@@ -60,8 +58,8 @@ dropboxClientCredentials = {
 dropboxClient = new Dropbox.Client(dropboxClientCredentials);
 
 dropboxClient.authDriver(new Dropbox.AuthDriver.Popup({
-	// receiverUrl: "http://localhost:9000/app/misc/oauth_reciever.html";
-	receiverUrl: "https://picture-projector-2.thepvongsa.c9users.io:8081/app/misc/oauth_reciever.html"
+	receiverUrl: "http://localhost:9000/app/misc/oauth_reciever.html"
+	//receiverUrl: "https://picture-projector-2.thepvongsa.c9users.io:8081/app/misc/oauth_reciever.html"
 }));
 
 var authenticatedClient = null;
@@ -72,35 +70,6 @@ function getClient() {
 
 // Constructs the root ItemMirror object from the root of the Dropbox.
 function constructIMObject(store) {
-    // Creates utilities depending on what store you're using
- //    console.log(store);
- //    if(store == "dropbox") {
- //    	xooMLUtility = {
- //    		fragmentURI: '/XooML2.xml',
- //    		driverURI: 'DropboxXooMLUtility',
- //    		dropboxClient: dropboxClient
- //    	};
- //    	itemUtility = {
- //    		driverURI: 'DropboxItemUtility',
- //    		dropboxClient: dropboxClient
- //    	};
- //    } else {
- //        xooMLUtility = {
- //            clientInterface: gapi
- //        };
- //        itemUtility = {
- //            clientInterface: gapi
- //        };
- //    };
-	// mirrorSyncUtility = {
-	// 	utilityURI: 'MirrorSyncUtility'
-	// };
-	// var options = {
-	// 	groupingItemURI: pathURI,
-	// 	xooMLDriver: xooMLUtility,
-	// 	itemDriver: itemUtility,
-	// 	syncDriver: mirrorSyncUtility
-	// };
 	im = new ItemMirror("Thisisastring", function(error, newMirror) {
 		if(error) {
 			console.log(error);
@@ -126,17 +95,17 @@ function constructIMObject(store) {
 	});
 }
 
-// Called upon the successful (re)authentication of a user. 
-function handleLastNavigated(newMirror) {
-    rootMirror = newMirror;
+// // Called upon the successful (re)authentication of a user. 
+// function handleLastNavigated(newMirror) {
+//     rootMirror = newMirror;
 
-    var lastVisited = im.getFragmentNamespaceAttribute('lastVisited', 'folder-docs');
-    console.log("lastVisited: " + lastVisited);
+//     var lastVisited = im.getFragmentNamespaceAttribute('lastVisited', 'folder-docs');
+//     console.log("lastVisited: " + lastVisited);
 
-    if(lastVisited && lastVisited != "/") {
-        constructIMObject(lastVisited, store);
-    } 
-}
+//     if(lastVisited && lastVisited != "/") {
+//         constructIMObject(lastVisited, store);
+//     } 
+// }
 
 // Directs the client to Google Drive's authentication page to sign in.
 function connectDrive() {
@@ -270,29 +239,29 @@ function refreshIMDisplay() {
 	}
 
 	// Prints out items in alphabetical order
-	printAssociations(orderAssociations(groupingItems), $("#canvas"));
+	printAssociations(groupingItems, $("#canvas"));
 	printAssociations(nonGroupingItems.sort(), $("#nonGroupingItems"));
 
 	createClickHandlers();
 }
 
-function orderAssociations(associationList) {
-	var orderedItems = [];
-	var nonOrderedItems = [];
+// function orderAssociations(associationList) {
+// 	var orderedItems = [];
+// 	var nonOrderedItems = [];
 
-	for(var i = 0; i < associationList.length; i++) {
-		var guid = associationList[i];
-		var placement = im.getAssociationNamespaceAttribute('order', guid, 'folder-docs');
-		if(placement) {
-			orderedItems[placement] = guid;
-		} else {
-			nonOrderedItems.push(guid);
-		}
-	}
+// 	for(var i = 0; i < associationList.length; i++) {
+// 		var guid = associationList[i];
+// 		var placement = im.getAssociationNamespaceAttribute('order', guid, 'folder-docs');
+// 		if(placement) {
+// 			orderedItems[placement] = guid;
+// 		} else {
+// 			nonOrderedItems.push(guid);
+// 		}
+// 	}
 
-	// Return an array of unorderedItems + orderedItems (in that order)
-	return nonOrderedItems.concat(orderedItems);
-}
+// 	// Return an array of unorderedItems + orderedItems (in that order)
+// 	return nonOrderedItems.concat(orderedItems);
+// }
 
 function printAssociations(associationList, div) {
 	for(var i = 0; i < associationList.length; i++) {
@@ -407,24 +376,24 @@ function printToolbar() {
 }
 
 
-// Attempts to save the order of the associations by matching
-// each associations guid with the array of guids returned on a reordering drop.
-function saveOrder() {
-	var displayedAssocs = $("#groupingItems").sortable("toArray", {attribute: 'data-guid'});
-	// Loop through each association
-	for(var i = 0; i < associations.length; i++) {
-		// Loop through each association we grabbed from the drop event
-		for(var k = 0; k < displayedAssocs.length; k++) {
-			// Find where the guids match, k will equal the proper order placement
-			// when we find a match
-			if(associations[i] == displayedAssocs[k]) {
-				im.setAssociationNamespaceAttribute('order', k, associations[i], 'folder-docs');
-			}
-		}
-	}
-	// After we've set all the proper namespace attributes, let's save the itemMirror
-	saveMirror();
-}
+// // Attempts to save the order of the associations by matching
+// // each associations guid with the array of guids returned on a reordering drop.
+// function saveOrder() {
+// 	var displayedAssocs = $("#groupingItems").sortable("toArray", {attribute: 'data-guid'});
+// 	// Loop through each association
+// 	for(var i = 0; i < associations.length; i++) {
+// 		// Loop through each association we grabbed from the drop event
+// 		for(var k = 0; k < displayedAssocs.length; k++) {
+// 			// Find where the guids match, k will equal the proper order placement
+// 			// when we find a match
+// 			if(associations[i] == displayedAssocs[k]) {
+// 				im.setAssociationNamespaceAttribute('order', k, associations[i], 'folder-docs');
+// 			}
+// 		}
+// 	}
+// 	// After we've set all the proper namespace attributes, let's save the itemMirror
+// 	saveMirror();
+// }
 
 // Abstraction of a picture projector itemMirror association. Includes
 // namespace attributes dealing with the positioning and display of an association.
@@ -441,9 +410,6 @@ function association(guid) {
 
 function setAssociation(assoc) {
 	var guid = assoc.guid;
-	console.log(guid);
-	console.log(assoc.xCord);
-	console.log(assoc.yCord);
 	im.setAssociationNamespaceAttribute('zIndex', assoc.zIndex, guid, 'picture-projector');
 	im.setAssociationNamespaceAttribute('yCord', assoc.yCord, guid, 'picture-projector');
 	im.setAssociationNamespaceAttribute('xCord', assoc.xCord, guid, 'picture-projector');

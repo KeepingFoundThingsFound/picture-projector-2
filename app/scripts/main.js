@@ -218,8 +218,8 @@ function refreshIMDisplay() {
     // });
 
 	var entryDisplayName;
-	$("#groupingItems").empty();
-	$("#nonGroupingItems").empty();
+	$("#canvas").empty();
+	// $("#nonGroupingItems").empty();
 
 	// Creates the previous/back button
 	printToolbar();
@@ -240,7 +240,7 @@ function refreshIMDisplay() {
 
 	// Prints out items in alphabetical order
 	printAssociations(groupingItems, $("#canvas"));
-	printAssociations(nonGroupingItems.sort(), $("#nonGroupingItems"));
+	// printAssociations(nonGroupingItems.sort(), $("#nonGroupingItems"));
 
 	createClickHandlers();
 }
@@ -276,7 +276,7 @@ function printAssociations(associationList, div) {
 function createClickHandlers() {
 	$("#previous-link").on("click", navigatePrevious);
 
-    $("#root-link").on("click", function(e) {
+    $("#home-button").on("click", function(e) {
     	location.reload();
     });
     
@@ -421,7 +421,7 @@ function associationMarkup(guid) {
 	var assoc = new association(guid);
 	
 	var markup = "<div id='" + assoc.displayText + "' data-guid='" + guid + "' class='folder draggable panel-default position-fixed association context-menu-one' style='" + handleAssocStyle(assoc) + "'>";
-	markup += "<p>" + assoc.displayText.substring(0, 11) + "</p>";
+	markup += "<p data-guid='" + guid + "'>" + assoc.displayText.substring(0, 11) + "</p>";
 	markup += "</div>";
 	
 	
@@ -506,7 +506,7 @@ interact('.draggable')
 	.on('tap', function (event) {
 		var guid = event.target.getAttribute('data-guid');
 		if(event.button != 2) {
-		   	// navigateMirror(guid);
+		   	navigateMirror(guid);
 		}
 	});
 

@@ -12,14 +12,14 @@ $(document).ready(function() {
     $("#gdriveButton").on("click", connectDrive);
 	//initialize context menu
 	$.contextMenu({
-            selector: '.context-menu-one', 
+            selector: '.context-menu-one',
             items: {
                 "edit": {
-                	name: "Choose custom URL",
+                	name: "Select a new picture to represent this folder",
                 	callback: function(e) {
                 		var element = $(this);
                 		var guid = element.attr('data-guid');
-                		var url = prompt("Please enter the url of the image you'd like as this item's background", "http://example.com/yourphoto.png");
+                		var url = prompt("Paste a URL for the picture to represent this folder", "http://example.com/yourphoto.png");
                 		im.setAssociationNamespaceAttribute('picture', url, guid, 'picture-projector');
                 		element.css({
                 			'background-image': 'url(' + url + ')',
@@ -95,7 +95,7 @@ function constructIMObject(store) {
 	});
 }
 
-// // Called upon the successful (re)authentication of a user. 
+// // Called upon the successful (re)authentication of a user.
 // function handleLastNavigated(newMirror) {
 //     rootMirror = newMirror;
 
@@ -104,14 +104,14 @@ function constructIMObject(store) {
 
 //     if(lastVisited && lastVisited != "/") {
 //         constructIMObject(lastVisited, store);
-//     } 
+//     }
 // }
 
 // Directs the client to Google Drive's authentication page to sign in.
 function connectDrive() {
     store = "Google Drive";
     var authenticated = authorizeDrive();
- 
+
     authenticated.then(function() {
         console.log('Successful Authentication!');
         authenticatedClient = gapi.client;
@@ -130,9 +130,9 @@ function authorizeDrive() {
   var auth = $.Deferred();
   // Need full permissions for everything to work. This is the easiest option
   var SCOPES = ['https://www.googleapis.com/auth/drive'];
- 
+
   checkAuth();
- 
+
   function checkAuth() {
     // Load the newer version of the API, the old version is a pain to deal with
     gapi.load('auth2', function() {
@@ -141,9 +141,9 @@ function authorizeDrive() {
         'scope': SCOPES.join(' '),
         'immediate': true
         });
- 
+
         var googAuth = gapi.auth2.getAuthInstance();
- 
+
         if (googAuth.isSignedIn.get()) {
             loadDriveAPI();
         } else {
@@ -157,7 +157,7 @@ function authorizeDrive() {
         }
     });
   }
- 
+
   // Loads the drive API, and resolves the promise
   function loadDriveAPI() {
     gapi.client.load('drive', 'v2', function() {
@@ -166,7 +166,7 @@ function authorizeDrive() {
         auth.resolve();
     });
   }
- 
+
   // Returns the promise object from our deferred object
   return auth.promise();
 }
@@ -204,6 +204,7 @@ function refreshIMDisplay() {
 		$(".jumbotron").hide();
 		$(".panel").show();
 		$(".clear").show();
+
 	}
 
     // Save the rootMirror lastvisited fragment
@@ -279,7 +280,7 @@ function createClickHandlers() {
     $("#home-button").on("click", function(e) {
     	location.reload();
     });
-    
+
     $('.association').on("mousedown", function(e) {
     	var guid = $(this).attr('data-guid');
     	selectAssociation(guid);
@@ -360,7 +361,7 @@ function printToolbar() {
     $('#button-toolbar').empty();
 
     // Prints the home/root button
-    var homeButton = "<button type='button' class='btn btn-default' id='root-link'>" 
+    var homeButton = "<button type='button' class='btn btn-default' id='home-button'>"
         + "<span class='glyphicon glyphicon glyphicon-home'></span> Home</button>";
 
     $('#button-toolbar').append(homeButton);
@@ -419,12 +420,12 @@ function setAssociation(assoc) {
 // Differentiates between a groupingItem and nonGroupinItem via icon
 function associationMarkup(guid) {
 	var assoc = new association(guid);
-	
-	var markup = "<div id='" + assoc.displayText + "' data-guid='" + guid + "' class='folder draggable panel-default position-fixed association context-menu-one' style='" + handleAssocStyle(assoc) + "'>";
+
+	var markup = "<div id='" + assoc.displayText + "' data-guid='" + guid + "' title='" + assoc.displayText + "' class='folder draggable panel-default position-fixed association context-menu-one' style='" + handleAssocStyle(assoc) + "'>";
 	markup += "<p data-guid='" + guid + "'>" + assoc.displayText.substring(0, 11) + "</p>";
 	markup += "</div>";
-	
-	
+
+
 
 	// 	<div id={{showDisplayText(assoc)}} ng-repeat="assoc in groupingItems" repeat-end="repeatEnd()" back-img="{{assoc.customPicture}}" data-displayName="{{assoc.displayName}}" data-guid="{{assoc.guid}}" data-toggle="tooltip" title="{{assoc.displayText}}" context-menu data-target="menu-{{ $index }}" ng-mousedown="handleAssocSelect(assoc)" class="folder draggable panel-default position-fixed" ng-style="::handleAssocStyle(assoc)"><p data-guid="{{assoc.guid}}">
 	// 	{{showDisplayText(assoc)}}</p>
@@ -437,7 +438,7 @@ function associationMarkup(guid) {
 	// 				</li>
 	// 			</ul>
 	// 		</div>
-	// 	</div> 
+	// 	</div>
 
 	// 	<div ng-click="handleClick(assoc)" ng-repeat="assoc in notGroupingItems" class="folder" style="background-image:url('images/file.gif')"><p>{{assoc.displayText | limitTo: 12}}</p></div>
 
@@ -454,7 +455,7 @@ function handleAssocStyle(assoc) {
 		result += "top: " + assoc.yCord + "px;";
 		result += "z-index: " + assoc.zIndex + "px;";
 		result += "position: absolute;";
-		
+
 	} else {
 		result += "position: relative;"
 	}
@@ -501,7 +502,7 @@ interact('.draggable')
     }
   })
 
-	// Handles a click on the folder, navigates to the 
+	// Handles a click on the folder, navigates to the
 	// folders guid, shows the loading spinner
 	.on('tap', function (event) {
 		var guid = event.target.getAttribute('data-guid');
@@ -514,19 +515,19 @@ function dragMoveListener (event) {
 	var target = event.target,
     // keep the dragged position in the data-x/data-y attributes
     x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
-    y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy; 
+    y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 	// translate the element
 	target.style.webkitTransform =
 	target.style.transform =
 	  'translate(' + x + 'px, ' + y + 'px)';
-	
+
 	// // Bring the element to overlap other elements using zIndex if it's
 	// // not already the element with the highest z-index
 	// if(target.style.zIndex < highestZIndex) {
 	//   highestZIndex++;
 	//   target.style.zIndex = highestZIndex;
 	// }
-	
+
 	// update the position attributes
 	target.setAttribute('data-x', x);
 	target.setAttribute('data-y', y);
@@ -535,17 +536,17 @@ function dragMoveListener (event) {
 // Gets the offset of the provided element relative to the canvas and current scroll
 function getOffsetRect(elem) {
 	var box = elem.getBoundingClientRect();
-	
+
 	var body = document.body;
 	var docElem = document.documentElement;
 	var canvasRect = document.getElementById('canvas').getBoundingClientRect();
-	
+
 	// Client scroll
 	var clientTop = docElem.clientTop || body.clientTop || 0;
 	var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-	
+
 	var top  =  box.top - clientTop - canvasRect.top;
 	var left = box.left - clientLeft - canvasRect.left;
-	
+
 	return { top: Math.round(top), left: Math.round(left) }
 }

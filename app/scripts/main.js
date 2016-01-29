@@ -58,8 +58,7 @@ dropboxClientCredentials = {
 dropboxClient = new Dropbox.Client(dropboxClientCredentials);
 
 dropboxClient.authDriver(new Dropbox.AuthDriver.Popup({
-	receiverUrl: "http://localhost:9000/app/misc/oauth_reciever.html"
-	//receiverUrl: "https://picture-projector-2.thepvongsa.c9users.io:8081/app/misc/oauth_reciever.html"
+	receiverUrl: config.dropboxURL
 }));
 
 var authenticatedClient = null;
@@ -424,7 +423,6 @@ function associationMarkup(guid) {
 	var markup = "<div id='" + assoc.displayText + "' data-guid='" + guid + "' title='" + assoc.displayText + "' class='folder draggable panel-default position-fixed association context-menu-one' style='" + handleAssocStyle(assoc) + "'>";
 	markup += "<p data-guid='" + guid + "'>" + assoc.displayText.substring(0, 11) + "</p>";
 	markup += "</div>";
-
 
 
 	// 	<div id={{showDisplayText(assoc)}} ng-repeat="assoc in groupingItems" repeat-end="repeatEnd()" back-img="{{assoc.customPicture}}" data-displayName="{{assoc.displayName}}" data-guid="{{assoc.guid}}" data-toggle="tooltip" title="{{assoc.displayText}}" context-menu data-target="menu-{{ $index }}" ng-mousedown="handleAssocSelect(assoc)" class="folder draggable panel-default position-fixed" ng-style="::handleAssocStyle(assoc)"><p data-guid="{{assoc.guid}}">

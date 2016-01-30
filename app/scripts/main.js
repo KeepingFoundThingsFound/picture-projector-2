@@ -214,9 +214,7 @@ function refreshIMDisplay() {
     //     }
     // });
 
-	var entryDisplayName;
 	$("#canvas").empty();
-	// $("#nonGroupingItems").empty();
 
 	// Creates the previous/back button
 	printToolbar();
@@ -242,30 +240,11 @@ function refreshIMDisplay() {
 	createClickHandlers();
 }
 
-// function orderAssociations(associationList) {
-// 	var orderedItems = [];
-// 	var nonOrderedItems = [];
-
-// 	for(var i = 0; i < associationList.length; i++) {
-// 		var guid = associationList[i];
-// 		var placement = im.getAssociationNamespaceAttribute('order', guid, 'folder-docs');
-// 		if(placement) {
-// 			orderedItems[placement] = guid;
-// 		} else {
-// 			nonOrderedItems.push(guid);
-// 		}
-// 	}
-
-// 	// Return an array of unorderedItems + orderedItems (in that order)
-// 	return nonOrderedItems.concat(orderedItems);
-// }
 
 function printAssociations(associationList, div) {
 	for(var i = 0; i < associationList.length; i++) {
-		var originalDisplayText = im.getAssociationDisplayText(associationList[i]);
 		var appendingObject = associationMarkup(associationList[i]);
 		div.append(appendingObject);
-		$("#" + associationList[i]).data("originalDisplayText", originalDisplayText);
 	}
 }
 

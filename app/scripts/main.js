@@ -1,10 +1,7 @@
 /*
  * name: main.js
  * Authors: Tanner Garrett, Brandon Thepvongsa
- * Description: JavaScript used to create the functionality of FolderDocs
- * TODO:
- * -Marked.js has been changed to not enclose given markup in <p> tags, need
- * to create own renderer later
+ * Description: JavaScript used to create the functionality of Picture Projector
 */
 
 $(document).ready(function() {
@@ -375,26 +372,6 @@ function printToolbar() {
 	return result;
 }
 
-
-// // Attempts to save the order of the associations by matching
-// // each associations guid with the array of guids returned on a reordering drop.
-// function saveOrder() {
-// 	var displayedAssocs = $("#groupingItems").sortable("toArray", {attribute: 'data-guid'});
-// 	// Loop through each association
-// 	for(var i = 0; i < associations.length; i++) {
-// 		// Loop through each association we grabbed from the drop event
-// 		for(var k = 0; k < displayedAssocs.length; k++) {
-// 			// Find where the guids match, k will equal the proper order placement
-// 			// when we find a match
-// 			if(associations[i] == displayedAssocs[k]) {
-// 				im.setAssociationNamespaceAttribute('order', k, associations[i], 'folder-docs');
-// 			}
-// 		}
-// 	}
-// 	// After we've set all the proper namespace attributes, let's save the itemMirror
-// 	saveMirror();
-// }
-
 // Abstraction of a picture projector itemMirror association. Includes
 // namespace attributes dealing with the positioning and display of an association.
 function association(guid) {
@@ -424,23 +401,6 @@ function associationMarkup(guid) {
 	markup += "<p data-guid='" + guid + "'>" + assoc.displayText.substring(0, 11) + "</p>";
 	markup += "</div>";
 
-
-	// 	<div id={{showDisplayText(assoc)}} ng-repeat="assoc in groupingItems" repeat-end="repeatEnd()" back-img="{{assoc.customPicture}}" data-displayName="{{assoc.displayName}}" data-guid="{{assoc.guid}}" data-toggle="tooltip" title="{{assoc.displayText}}" context-menu data-target="menu-{{ $index }}" ng-mousedown="handleAssocSelect(assoc)" class="folder draggable panel-default position-fixed" ng-style="::handleAssocStyle(assoc)"><p data-guid="{{assoc.guid}}">
-	// 	{{showDisplayText(assoc)}}</p>
-
-	// 		<div class="dropdown" id="menu-{{ $index }}">
-	// 			<ul class="dropdown-menu" role="menu">
-	// 				<li class="set-background">
-	// 					<a class="pointer" role="menuitem" tabindex="1"
-	// 					ng-click="handleBackgroundEdit()"><span class="strong">Set Background</span></a>
-	// 				</li>
-	// 			</ul>
-	// 		</div>
-	// 	</div>
-
-	// 	<div ng-click="handleClick(assoc)" ng-repeat="assoc in notGroupingItems" class="folder" style="background-image:url('images/file.gif')"><p>{{assoc.displayText | limitTo: 12}}</p></div>
-
-	// </div>
 	return markup;
 
 }

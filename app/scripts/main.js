@@ -66,7 +66,7 @@ function getClient() {
 
 // Constructs the root ItemMirror object from the root of the Dropbox.
 function constructIMObject(store) {
-	im = new ItemMirror("Thisisastring", function(error, newMirror) {
+	im = new ItemMirror("anotherstring", function(error, newMirror) {
 		if(error) {
 			console.log(error);
 		} else {
@@ -252,9 +252,7 @@ function printAssociations(associationList, div) {
 function createClickHandlers() {
 	$("#previous-link").on("click", navigatePrevious);
 
-    $("#home-button").on("click", function(e) {
-    	location.reload();
-    });
+    $("#root-link").on("click", navigateRoot);
 
     $('.association').on("mousedown", function(e) {
     	var guid = $(this).attr('data-guid');
@@ -295,7 +293,12 @@ function navigateMirror(guid) {
 
 		if(!error) {
 			im = newMirror;
-            refreshIMDisplay();
+
+			if(!rootMirror) {
+				rootMirror = im; // Save root to be used for home button and root fragment saving
+			}
+
+      refreshIMDisplay();
 		} else {
 			console.log(error);
 		}
@@ -336,7 +339,7 @@ function printToolbar() {
     $('#button-toolbar').empty();
 
     // Prints the home/root button
-    var homeButton = "<button type='button' class='btn btn-default' id='home-button'>"
+    var homeButton = "<button type='button' class='btn btn-default' id='root-link'>"
         + "<span class='glyphicon glyphicon glyphicon-home'></span> Home</button>";
 
     $('#button-toolbar').append(homeButton);
